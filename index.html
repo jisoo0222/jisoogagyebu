@@ -83,6 +83,8 @@
   body[data-accent="pink"] { --point: var(--pink); --point-deep: #E57D93; }
   body[data-accent="mint"] { --point: var(--mint); --point-deep: #55AD8C; }
   body[data-accent="sky"]  { --point: var(--sky);  --point-deep: #5A9BDB; }
+  body[data-accent="peach"] { --point: var(--peach); --point-deep: #E99A5C; }
+  body[data-accent="lilac"] { --point: var(--lilac); --point-deep: #9A85D9; }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; }
@@ -117,6 +119,8 @@
   .header { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px 4px; }
   .title-group { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .logo-mark { flex-shrink: 0; display: block; }
+  .logo-full { flex-shrink: 0; display: block; height: 34px; width: auto; }
+  body.m-layout .logo-full { height: 28px; }
   .app-title-input {
     font-family: var(--display); font-size: 24px; color: var(--ink); background: transparent; border: none; outline: none;
     width: 170px; padding: 0 0 2px; border-bottom: 2px solid transparent;
@@ -129,6 +133,8 @@
   .theme-btn[data-accent="pink"]   { background: var(--pink); }
   .theme-btn[data-accent="mint"]   { background: var(--mint); }
   .theme-btn[data-accent="sky"]    { background: var(--sky); }
+  .theme-btn[data-accent="peach"]  { background: var(--peach); }
+  .theme-btn[data-accent="lilac"]  { background: var(--lilac); }
 
   /* ============ 모드 탭 ============ */
   .main-mode-tabs { display: flex; gap: 4px; padding: 5px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--pill); }
@@ -551,7 +557,10 @@
   .sync-card { background: var(--cream); border-radius: var(--r-md); padding: 12px 14px; font-size: 12.5px; font-weight: 700; line-height: 1.6; }
   .sync-card b { font-weight: 800; }
   .accent-row { display: flex; gap: 10px; }
-  .accent-row .theme-btn { width: 30px; height: 30px; }
+  .accent-row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+  .accent-opt { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 2px 8px; border: none; border-radius: var(--r-md); background: var(--cream); cursor: pointer; font-family: var(--body); font-size: 11.5px; font-weight: 800; color: var(--muted); }
+  .accent-opt.active { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+  .accent-opt .theme-btn { width: 30px; height: 30px; pointer-events: none; outline: none; }
 
   /* ============ 모바일 화면 (body.m-layout) ============ */
   .m-nav, .m-quick { display: none; }
@@ -702,16 +711,10 @@
   <div class="left-panel">
     <div class="header">
       <div class="title-group">
-        <span id="logoMark"></span>
+        <svg class="logo-full" viewBox="0 0 1060 380" role="img" aria-label="지계부"><defs><g id="jgbL2" stroke-linecap="round" stroke-linejoin="round" fill="none"><g transform="translate(34 40) rotate(-7 90 100)"><path d="M25 32 C50 26 80 26 106 32"/><path d="M66 40 C64 90 48 126 22 156"/><path d="M74 98 C86 116 102 130 120 142"/><path d="M166 16 C164 70 166 130 168 180"/></g><g transform="translate(252 26) rotate(4 110 110)"><path d="M20 34 C42 30 58 30 70 34 C78 38 78 46 76 56 C68 100 52 132 26 160"/><path d="M116 74 H128"/><path d="M116 136 H128"/><path d="M146 14 C144 76 146 140 148 200"/><path d="M216 12 C214 76 216 140 218 200"/></g><g transform="translate(542 36) rotate(-5 70 110)"><path d="M20 14 C20 50 20 80 22 106"/><path d="M118 14 C118 50 118 80 116 106"/><path d="M22 34 C54 32 86 32 116 34"/><path d="M22 106 C54 108 86 108 116 106"/><path d="M2 176 C46 170 92 170 138 176"/><path d="M70 178 C70 198 70 214 72 230"/></g></g><!-- 반짝 하이라이트(획 왼쪽 위) --><g id="H" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.9"><g transform="translate(34 40) rotate(-7 90 100)"><path d="M34 22 C44 19 54 18 62 18"/><path d="M156 30 C156 40 156 48 156 54"/></g><g transform="translate(252 26) rotate(4 110 110)"><path d="M26 24 C34 22 42 21 48 21"/><path d="M140 28 C140 38 140 46 140 52"/><path d="M202 26 C202 36 202 44 202 50"/></g><g transform="translate(542 36) rotate(-5 70 110)"><path d="M10 28 C10 38 10 46 10 52"/><path d="M14 154 C24 152 34 151 42 150"/></g></g></defs><!-- 글자 --><g transform="translate(250 28) scale(1.12)"><use href="#jgbL2" stroke="#FFD84D" stroke-width="54"/></g><!-- 캐릭터 --><g transform="translate(8 74) scale(1.12)"><path d="M118 14C176 8 224 44 226 112C228 170 190 214 120 218C54 222 10 186 8 122C6 62 54 20 118 14Z" fill="#FFD84D"/><ellipse cx="86" cy="114" rx="11" ry="15" fill="#3B2A1A"/><ellipse cx="148" cy="114" rx="11" ry="15" fill="#3B2A1A"/><ellipse cx="82" cy="108" rx="3.6" ry="4.8" fill="#FFF"/><ellipse cx="144" cy="108" rx="3.6" ry="4.8" fill="#FFF"/><path d="M103 146 q14 14 28 0" stroke="#3B2A1A" stroke-width="6" fill="none" stroke-linecap="round"/><ellipse cx="62" cy="140" rx="13" ry="8" fill="#FF9DB0"/><ellipse cx="172" cy="140" rx="13" ry="8" fill="#FF9DB0"/><!-- 동전 들고 있는 손 --><g transform="rotate(-10 196 196)"><circle cx="200" cy="196" r="36" fill="#FFB5C1"/><circle cx="200" cy="196" r="23" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.8"/><path d="M187 184 L192 208 L200 191 L208 208 L213 184" stroke="#3B2A1A" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M184 196 H216" stroke="#3B2A1A" stroke-width="4" stroke-linecap="round"/></g></g></svg>
         <input type="text" id="appTitle" class="app-title-input" value="나의 가계부" aria-label="가계부 이름" />
       </div>
       <button class="sync-chip m-only" data-state="local" onclick="explainSync()"><i></i><span>이 기기에만</span></button>
-      <div class="theme-switcher" role="group" aria-label="포인트 색">
-        <button class="theme-btn active" data-accent="butter" onclick="changeTheme('butter')" aria-label="노랑"></button>
-        <button class="theme-btn" data-accent="pink" onclick="changeTheme('pink')" aria-label="분홍"></button>
-        <button class="theme-btn" data-accent="mint" onclick="changeTheme('mint')" aria-label="민트"></button>
-        <button class="theme-btn" data-accent="sky" onclick="changeTheme('sky')" aria-label="하늘"></button>
-      </div>
     </div>
 
     <div class="main-mode-tabs">
@@ -1015,11 +1018,14 @@
     <div class="set-section">
       <div class="sub-title">포인트 색</div>
       <div class="accent-row">
-        <button class="theme-btn" data-accent="butter" onclick="changeTheme('butter')" aria-label="노랑"></button>
-        <button class="theme-btn" data-accent="pink" onclick="changeTheme('pink')" aria-label="분홍"></button>
-        <button class="theme-btn" data-accent="mint" onclick="changeTheme('mint')" aria-label="민트"></button>
-        <button class="theme-btn" data-accent="sky" onclick="changeTheme('sky')" aria-label="하늘"></button>
+        <button class="accent-opt" data-accent="butter" onclick="changeTheme('butter')"><span class="theme-btn" data-accent="butter"></span>노랑</button>
+        <button class="accent-opt" data-accent="peach" onclick="changeTheme('peach')"><span class="theme-btn" data-accent="peach"></span>살구</button>
+        <button class="accent-opt" data-accent="pink" onclick="changeTheme('pink')"><span class="theme-btn" data-accent="pink"></span>분홍</button>
+        <button class="accent-opt" data-accent="lilac" onclick="changeTheme('lilac')"><span class="theme-btn" data-accent="lilac"></span>라일락</button>
+        <button class="accent-opt" data-accent="mint" onclick="changeTheme('mint')"><span class="theme-btn" data-accent="mint"></span>민트</button>
+        <button class="accent-opt" data-accent="sky" onclick="changeTheme('sky')"><span class="theme-btn" data-accent="sky"></span>하늘</button>
       </div>
+      <p class="modal-desc">잔액 카드, 달력, 버튼 같은 곳의 색이 바뀌어요. 계정에 같이 저장돼서 다른 기기에서도 똑같아요.</p>
     </div>
     <div class="set-section">
       <div class="sub-title">잔소리 맛</div>
@@ -1283,7 +1289,7 @@ const KEYS = {
   wish: "expense-wishlist", savings: "expense-savings", budgets: "expense-budgets", learned: "expense-learned",
   recv: "expense-receivables", settings: "expense-settings", points: "expense-points",
 };
-const THEMES = ["butter", "pink", "mint", "sky"];
+const THEMES = ["butter", "peach", "pink", "lilac", "mint", "sky"];
 const SPICE_LABEL = { mild: "순한맛", normal: "보통맛", spicy: "매운맛" };
 const SPICE_DESC = { mild: "다정하게, 걱정은 살짝만 말해요.", normal: "할 말은 하지만 기분 나쁘지 않게 말해요.", spicy: "돌려 말하지 않아요. 팩트로 때려요." };
 
@@ -1382,7 +1388,6 @@ function initTooltip() {
 // 초기화
 // =====================================================================
 function initSettings() {
-  $("logoMark").innerHTML = mascotSVG("happy", 30, "var(--point)").replace('class="mascot"', 'class="logo-mark"');
   ["arrowFixed", "arrowAdd", "arrowWish", "arrowSavList"].forEach(id => $(id).innerHTML = ARROW);
   $("arrowReport").innerHTML = CHEVRON;
   $("searchClear").innerHTML = ICON_DEL;
@@ -1413,7 +1418,7 @@ function changeTheme(themeName) {
   const changed = document.body.dataset.accent !== themeName;
   document.body.dataset.accent = themeName;
   safeSet(KEYS.theme, themeName);
-  document.querySelectorAll(".theme-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.accent === themeName));
+  document.querySelectorAll(".accent-opt").forEach(btn => btn.classList.toggle("active", btn.dataset.accent === themeName));
   if (changed) schedulePush();
 }
 function switchMode(mode) {
