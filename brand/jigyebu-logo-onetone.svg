@@ -29,20 +29,5 @@
   <g transform="translate(250 28) scale(1.12)">
     <use href="#L" stroke="#FFD84D" stroke-width="54"/>
   </g>
-
-  <!-- 캐릭터 -->
-  <g transform="translate(8 74) scale(1.12)">
-    <path d="M118 14C176 8 224 44 226 112C228 170 190 214 120 218C54 222 10 186 8 122C6 62 54 20 118 14Z" fill="#FFD84D"/>
-        <ellipse cx="86" cy="114" rx="11" ry="15" fill="#3B2A1A"/><ellipse cx="148" cy="114" rx="11" ry="15" fill="#3B2A1A"/>
-    <ellipse cx="82" cy="108" rx="3.6" ry="4.8" fill="#FFF"/><ellipse cx="144" cy="108" rx="3.6" ry="4.8" fill="#FFF"/>
-    <path d="M103 146 q14 14 28 0" stroke="#3B2A1A" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <ellipse cx="62" cy="140" rx="13" ry="8" fill="#FF9DB0"/><ellipse cx="172" cy="140" rx="13" ry="8" fill="#FF9DB0"/>
-    <!-- 동전 들고 있는 손 -->
-    <g transform="rotate(-10 196 196)">
-      <circle cx="200" cy="196" r="36" fill="#FFB5C1"/>
-      <circle cx="200" cy="196" r="23" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.8"/>
-      <path d="M187 184 L192 208 L200 191 L208 208 L213 184" stroke="#3B2A1A" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M184 196 H216" stroke="#3B2A1A" stroke-width="4" stroke-linecap="round"/>
-    </g>
-  </g>
+  <g transform="translate(6 62) scale(2.05)"><ellipse cx="60" cy="108" rx="44" ry="3.6" fill="#4A3426" opacity=".08"/><path d="M8 90 C3 58 26 30 60 30 C94 30 117 58 112 90 C110 102 96 107 60 107 C24 107 10 102 8 90Z" fill="#FFD84D"/><path d="M11 88 C28 99 92 99 109 88 C109 101 96 107 60 107 C24 107 11 101 11 88Z" fill="#F3C13A" opacity=".45"/><ellipse cx="38" cy="48" rx="11" ry="5.5" transform="rotate(-28 38 48)" fill="#FFFFFF" opacity=".5"/><path d="M60 31 C60 24 60 19 58.5 14" stroke="#6CBF97" stroke-width="4.2" fill="none" stroke-linecap="round"/><path d="M58 15 C49 5 35 6 32 14 C41 22 52 21 58 15Z" fill="#8FD0B0"/><path d="M59.5 15 C65 3 81 2 86 10 C79 20 66 21 59.5 15Z" fill="#6CBF97"/><ellipse cx="33" cy="78" rx="8.5" ry="5.2" fill="#FFA3B3" opacity=".9"/><ellipse cx="87" cy="78" rx="8.5" ry="5.2" fill="#FFA3B3" opacity=".9"/><ellipse cx="47" cy="68" rx="4.8" ry="6.4" fill="#4A3426"/><ellipse cx="73" cy="68" rx="4.8" ry="6.4" fill="#4A3426"/><circle cx="45.6" cy="65.6" r="1.7" fill="#fff"/><circle cx="71.6" cy="65.6" r="1.7" fill="#fff"/><path d="M53 78 q7 7 14 0" stroke="#4A3426" stroke-width="3.2" fill="none" stroke-linecap="round"/><g transform="rotate(-10 104 92)"><circle cx="104" cy="92" r="15" fill="#FFB5C1"/><circle cx="104" cy="92" r="10" fill="none" stroke="#FFFFFF" stroke-width="1.4" opacity=".8"/><path d="M98 86.5 L100.5 97 L104 89.5 L107.5 97 L110 86.5 M96.5 92 H111.5" stroke="#4A3426" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></g>
 </svg>
