@@ -331,6 +331,21 @@
   .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .field > span { font-size: 11.5px; font-weight: 800; color: var(--muted); padding-left: 4px; }
 
+  [hidden] { display: none !important; }
+  /* ============ 처음 화면: 로그인 / 회원가입 ============ */
+  .auth-gate { position: fixed; inset: 0; z-index: 1100; background: var(--cream); display: flex; align-items: center; justify-content: center;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+  .auth-card { width: min(100%, 380px); background: var(--paper); border-radius: var(--r-xl); padding: 28px 22px 22px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 30px var(--shadow-up); }
+  .auth-hero { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding-bottom: 4px; }
+  .auth-hero .mascot-wrap { background: var(--point-soft); border-radius: 50%; width: 92px; height: 92px; display: flex; align-items: center; justify-content: center; }
+  .auth-hero h2 { font-family: var(--display); font-size: 24px; font-weight: 400; margin: 4px 0 0; }
+  .auth-hero p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.5; text-wrap: balance; }
+  .auth-msg { white-space: pre-line; font-size: 12.5px; font-weight: 700; color: var(--warn); margin: 0; min-height: 1em; text-align: center; line-height: 1.5; }
+  .auth-msg.ok { color: var(--income); }
+  .auth-main { width: 100%; padding: 13px; font-size: 16px; }
+  .auth-main:disabled { opacity: 0.5; cursor: default; }
+  .auth-skip { background: none; border: none; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 4px; align-self: center; font-family: var(--body); }
+
   /* ============ 고정 지출·수입 & 적금 ============ */
   .modal-tabs { display: flex; }
   .modal-tabs .seg-btn { flex: 1; padding: 9px 0; font-size: 13.5px; }
@@ -1083,19 +1098,25 @@
   </div>
 </div>
 
-<!-- ============ 팝업: 로그인 (웹사이트) ============ -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal-content">
-    <h3 class="modal-title">로그인</h3>
-    <p class="modal-desc">로그인하면 폰·컴퓨터 어디서 열어도 같은 가계부가 보여요. 처음이면 이메일과 비밀번호를 정하고 '가입하기'를 눌러주세요.</p>
-    <label class="field"><span>이메일</span><input id="lgEmail" class="modal-input" type="email" autocomplete="email" /></label>
-    <label class="field"><span>비밀번호 (6자 이상)</span><input id="lgPw" class="modal-input" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter'&&!event.isComposing)doSignIn()" /></label>
-    <p class="modal-desc" id="lgMsg" style="color:var(--warn); margin:0;"></p>
-    <div class="modal-btns">
-      <button class="modal-btn btn-cancel" onclick="doSignUp()">가입하기</button>
-      <button class="modal-btn btn-save" onclick="doSignIn()">로그인</button>
+<!-- ============ 처음 화면: 로그인 / 회원가입 (웹사이트) ============ -->
+<div class="auth-gate" id="authGate" hidden>
+  <form class="auth-card" id="authForm" onsubmit="event.preventDefault(); authSubmit();">
+    <div class="auth-hero">
+      <div class="mascot-wrap" id="authMascot"></div>
+      <h2 id="authTitle">다시 만나서 반가워요</h2>
+      <p id="authDesc">로그인하면 폰·컴퓨터 어디서 열어도 같은 가계부가 보여요.</p>
     </div>
-  </div>
+    <div class="chip-group modal-tabs">
+      <button type="button" class="seg-btn active" data-auth="in" onclick="setAuthMode('in')">로그인</button>
+      <button type="button" class="seg-btn" data-auth="up" onclick="setAuthMode('up')">회원가입</button>
+    </div>
+    <label class="field"><span>이메일</span><input id="lgEmail" class="modal-input" type="email" autocomplete="email" placeholder="example@gmail.com" /></label>
+    <label class="field"><span>비밀번호 (6자 이상)</span><input id="lgPw" class="modal-input" type="password" autocomplete="current-password" /></label>
+    <label class="field" id="lgPw2Field" hidden><span>비밀번호 한 번 더</span><input id="lgPw2" class="modal-input" type="password" autocomplete="new-password" /></label>
+    <p class="auth-msg" id="lgMsg"></p>
+    <button type="submit" class="modal-btn btn-save auth-main" id="authBtn">로그인</button>
+    <button type="button" class="auth-skip" onclick="skipAuth()">로그인 없이 이 기기에서만 쓰기</button>
+  </form>
 </div>
 
 <!-- ============ 팝업: 확인 ============ -->
@@ -3381,6 +3402,8 @@ function loadScript(src) {
 async function initSupabase() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { setSync("local"); return; }
   cloud.provider = "supabase"; setSync("connecting");
+  let hasSaved = false; try { hasSaved = Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k)); } catch (e) {}
+  if (!hasSaved && safeGet(AUTH_SKIP) !== "1") showAuthGate("in");
   try {
     if (!window.supabase) {
       let ok = false;
@@ -3388,13 +3411,20 @@ async function initSupabase() {
       if (!ok) throw new Error("supabase-js load failed");
     }
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
-  } catch (e) { setSync("local"); cloud.provider = null; showToast("인터넷 연결이 없어서 이 기기에만 저장해요"); return; }
+  } catch (e) {
+    setSync("local"); cloud.provider = null;
+    if (!$("authGate").hidden) { authMsg("서버에 연결하지 못했어요. 인터넷을 확인하고 새로고침해주세요."); }
+    else showToast("인터넷 연결이 없어서 이 기기에만 저장해요");
+    return;
+  }
+  $("authBtn").disabled = false; if ($("lgMsg").textContent === "연결하는 중…") authMsg("");
   sb.auth.onAuthStateChange((event, session) => {
-    if (session && session.user && cloud.uid !== session.user.id) startSupabaseSync(session.user);
+    if (session && session.user) { if (!$("authGate").hidden) hideAuthGate(); if (cloud.uid !== session.user.id) startSupabaseSync(session.user); }
     if (event === "SIGNED_OUT") stopSupabaseSync();
   });
   const { data } = await sb.auth.getSession();
-  if (data && data.session) startSupabaseSync(data.session.user); else setSync("signin");
+  if (data && data.session) { hideAuthGate(); startSupabaseSync(data.session.user); }
+  else { setSync("signin"); if (!hasSaved && safeGet(AUTH_SKIP) !== "1") showAuthGate(); else if (hasSaved && safeGet(AUTH_SKIP) !== "1") showAuthGate("in"); }
 }
 async function sbFetchAll() {
   const { data, error } = await sb.from("ledger_docs").select("doc_id,data").eq("user_id", cloud.uid);
@@ -3433,7 +3463,32 @@ function stopSupabaseSync() {
   setSync("signin");
   if (isOpen("settingsModal")) renderSettings();
 }
-function openLogin() { $("lgMsg").textContent = ""; openModal("loginModal"); setTimeout(() => $("lgEmail").focus(), 60); }
+let authMode = "in";
+const AUTH_SKIP = "expense-auth-skip";
+function setAuthMode(m) {
+  authMode = m;
+  document.querySelectorAll("#authGate [data-auth]").forEach(b => b.classList.toggle("active", b.dataset.auth === m));
+  $("lgPw2Field").hidden = m !== "up";
+  $("lgPw").autocomplete = m === "up" ? "new-password" : "current-password";
+  $("authTitle").textContent = m === "up" ? "처음 오셨군요!" : "다시 만나서 반가워요";
+  $("authDesc").textContent = m === "up" ? "이메일과 비밀번호만 정하면 끝이에요. 인증 메일이 한 번 가요." : "로그인하면 폰·컴퓨터 어디서 열어도 같은 가계부가 보여요.";
+  $("authBtn").textContent = m === "up" ? "가입하기" : "로그인";
+  authMsg("");
+}
+function authMsg(t, ok) { const el = $("lgMsg"); el.textContent = t || ""; el.classList.toggle("ok", !!ok); }
+function showAuthGate(mode) {
+  document.querySelectorAll(".modal-overlay").forEach(m => { if (m.id !== "confirmModal" && m.style.display === "flex") closeModal(m.id); });
+  $("authMascot").innerHTML = mascotSVG("happy", 64);
+  setAuthMode(mode || authMode);
+  $("authGate").hidden = false;
+  $("authBtn").disabled = !sb;
+  if (!sb) authMsg("연결하는 중…", true);
+  setTimeout(() => { try { $("lgEmail").focus(); } catch (e) {} }, 60);
+}
+function hideAuthGate() { $("authGate").hidden = true; $("lgPw").value = ""; $("lgPw2").value = ""; }
+function skipAuth() { safeSet(AUTH_SKIP, "1"); hideAuthGate(); showToast("이 기기에만 저장돼요. 오른쪽 위 ☁ 버튼으로 언제든 로그인할 수 있어요"); }
+function openLogin() { showAuthGate("in"); }
+function authSubmit() { if (authMode === "up") doSignUp(); else doSignIn(); }
 function authMessage(err) {
   const m = (err && err.message) || "";
   if (/invalid login credentials/i.test(m)) return "이메일이나 비밀번호가 맞지 않아요.";
@@ -3446,23 +3501,24 @@ function authMessage(err) {
 async function doSignIn() {
   if (!sb) return;
   const email = $("lgEmail").value.trim(), password = $("lgPw").value;
-  if (!email || !password) { $("lgMsg").textContent = "이메일과 비밀번호를 적어주세요."; return; }
-  $("lgMsg").textContent = "로그인하는 중…";
+  if (!email || !password) { authMsg("이메일과 비밀번호를 적어주세요."); return; }
+  authMsg("로그인하는 중…", true);
   const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) { $("lgMsg").textContent = authMessage(error); return; }
-  closeModal("loginModal"); $("lgPw").value = "";
-  showToast("로그인했어요");
+  if (error) { authMsg(authMessage(error)); return; }
+  hideAuthGate(); showToast("로그인했어요");
 }
 async function doSignUp() {
   if (!sb) return;
   const email = $("lgEmail").value.trim(), password = $("lgPw").value;
-  if (!email || password.length < 6) { $("lgMsg").textContent = "이메일과 6자 이상 비밀번호를 적어주세요."; return; }
-  $("lgMsg").textContent = "가입하는 중…";
+  if (!email || password.length < 6) { authMsg("이메일과 6자 이상 비밀번호를 적어주세요."); return; }
+  if (password !== $("lgPw2").value) { authMsg("비밀번호 두 개가 서로 달라요."); return; }
+  authMsg("가입하는 중…", true);
   const redirect = /^https?:/.test(location.href) ? location.href.split("#")[0] : undefined;
   const { data, error } = await sb.auth.signUp({ email, password, options: redirect ? { emailRedirectTo: redirect } : {} });
-  if (error) { $("lgMsg").textContent = authMessage(error); return; }
-  if (data && data.session) { closeModal("loginModal"); $("lgPw").value = ""; showToast("가입하고 로그인했어요"); }
-  else $("lgMsg").textContent = "인증 메일을 보냈어요. 메일의 링크를 누른 뒤 여기서 로그인해주세요.";
+  if (error) { authMsg(authMessage(error)); return; }
+  if (data && data.session) { hideAuthGate(); showToast("가입하고 로그인했어요"); }
+  else if (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) { setAuthMode("in"); authMsg("이미 가입된 이메일이에요. 비밀번호로 로그인해주세요."); }
+  else { setAuthMode("in"); $("lgPw").value = ""; authMsg("📮 " + email + " 로 인증 메일을 보냈어요.\n메일의 링크를 누르면 바로 로그인돼요. (메일이 없으면 스팸함도 봐주세요)", true); }
 }
 async function doSignOut() {
   const wipe = await askConfirm("로그아웃", "이 기기에 저장된 가계부 기록도 지울까요?\n지우지 않으면 로그아웃해도 이 기기에서는 계속 보여요.", "기기 기록도 지우기", "기록은 남기기");
@@ -3470,6 +3526,7 @@ async function doSignOut() {
   stopSupabaseSync();
   if (wipe) { Object.values(KEYS).forEach(k => { try { localStorage.removeItem(k); } catch (e) { /* 무시 */ } }); safeSet(LOCAL.syncUid, ""); loadData(); }
   showToast("로그아웃했어요");
+  if (cloud.provider === "supabase") { safeSet(AUTH_SKIP, ""); showAuthGate("in"); }
 }
 
 // =====================================================================
