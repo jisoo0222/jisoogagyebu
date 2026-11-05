@@ -485,6 +485,12 @@
   /* ============ 가져오기 ============ */
   .imp-map { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
   .imp-map select { padding: 8px 10px; font-size: 12.5px; }
+  .imp-range { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--cream); border-radius: var(--r-md); padding: 8px 10px; }
+  .imp-range-label { font-size: 12px; font-weight: 800; color: var(--muted); }
+  .imp-range input[type=date] { width: auto; padding: 7px 10px; font-size: 12.5px; }
+  .imp-range-sep { font-weight: 800; color: var(--muted); }
+  .imp-range-quick { margin-left: auto; background: var(--paper); }
+  body.m-layout .imp-range-quick { margin-left: 0; }
   .imp-toolbar { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 800; gap: 8px; flex-wrap: wrap; }
   .imp-toolbar label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .imp-table-wrap { border: 1px solid var(--line); border-radius: var(--r-md); overflow: auto; max-height: 46vh; }
@@ -1062,6 +1068,18 @@
     <h3 class="modal-title">내역 가져오기</h3>
     <p class="modal-desc" id="impInfo"></p>
     <div class="imp-map" id="impMap"></div>
+    <div class="imp-range">
+      <span class="imp-range-label">가져올 기간</span>
+      <input type="date" id="impFrom" class="modal-input" onchange="setImpRange(this.value, null)" aria-label="시작 날짜" />
+      <span class="imp-range-sep">~</span>
+      <input type="date" id="impTo" class="modal-input" onchange="setImpRange(null, this.value)" aria-label="끝 날짜" />
+      <div class="chip-group imp-range-quick" id="impQuick">
+        <button class="seg-btn" data-q="all" onclick="quickImpRange('all')">전체</button>
+        <button class="seg-btn" data-q="this" onclick="quickImpRange('this')">이번 달</button>
+        <button class="seg-btn" data-q="last" onclick="quickImpRange('last')">지난 달</button>
+        <button class="seg-btn" data-q="3m" onclick="quickImpRange('3m')">최근 3개월</button>
+      </div>
+    </div>
     <div class="imp-toolbar">
       <label><input type="checkbox" id="impAll" onchange="toggleImpAll(this.checked)" /> 전체 선택</label>
       <span id="impCount"></span>
@@ -1511,8 +1529,8 @@ const EXPENSE_RULES = [
   ["반려동물", /고양이|강아지|댕댕|냥이|사료|동물병원|펫|반려|츄르|모래/],
   ["교육", /학원|강의|인강|수강|교재|과외|응시료|시험비|토익|자격증/],
   ["카페/간식", /커피|카페|스타벅스|스벅|메가커피|메가mgc|컴포즈|이디야|투썸|빽다방|아아|아메리카노|라떼|빵|베이커리|파리바게뜨|뚜레쥬르|디저트|케이크|아이스크림|배스킨|과자|간식|음료|버블티|공차|탕후루|도넛|마카롱|쿠키|젤리|초콜릿/],
-  ["배달", /배달|배민|배달의민족|요기요|쿠팡이츠|땡겨요|위메프오/],
-  ["식비", /밥|비빔|식당|짜장|짬뽕|탕수육|떡볶이|치킨|치맥|피자|피맥|마라탕|마라샹궈|훠궈|양꼬치|딤섬|햄버거|버거|초밥|스시|사시미|육회|물회|회덮밥|고기|삼겹살|목살|갈비|불고기|제육|오삼|곱창|막창|대창|순대|국밥|국수|칼국수|수제비|막국수|냉면|쌀국수|팟타이|우동|라멘|라면|소바|돈부리|규동|텐동|김밥|떡국|떡|만두|어묵|찌개|부대찌개|순두부|된장|감자탕|해장국|설렁탕|곰탕|삼계탕|닭갈비|닭발|찜닭|아구찜|갈비찜|해물|낙지|쭈꾸미|주꾸미|오징어|새우|게장|생선|고등어|연어|참치|장어|오리|전복|조개|굴|돈까스|돈가스|카츠|파스타|리조또|스테이크|오므라이스|카레|샐러드|포케|샌드위치|토스트|타코|부리또|핫도그|붕어빵|호떡|도시락|분식|백반|정식|뷔페|한식|중식|일식|양식|식비|점심|저녁|아침|야식|맥도날드|맘스터치|서브웨이|롯데리아|버거킹|kfc|외식|술집|술값|술자리|맥주|소주|와인|회식|족발|보쌈|덮밥|쌈밥/],
+  ["배달", /배달|배민|배달의민족|우아한형제들|요기요|위대한상상|쿠팡이츠|땡겨요|위메프오/],
+  ["식비", /밥|비빔|식당|푸드|food|김밥|분식|한식|중식|일식|양식|국밥|짜장|짬뽕|탕수육|떡볶이|치킨|치맥|피자|피맥|마라탕|마라샹궈|훠궈|양꼬치|딤섬|햄버거|버거|초밥|스시|사시미|육회|물회|회덮밥|고기|삼겹살|목살|갈비|불고기|제육|오삼|곱창|막창|대창|순대|국밥|국수|칼국수|수제비|막국수|냉면|쌀국수|팟타이|우동|라멘|라면|소바|돈부리|규동|텐동|김밥|떡국|떡|만두|어묵|찌개|부대찌개|순두부|된장|감자탕|해장국|설렁탕|곰탕|삼계탕|닭갈비|닭발|찜닭|아구찜|갈비찜|해물|낙지|쭈꾸미|주꾸미|오징어|새우|게장|생선|고등어|연어|참치|장어|오리|전복|조개|굴|돈까스|돈가스|카츠|파스타|리조또|스테이크|오므라이스|카레|샐러드|포케|샌드위치|토스트|타코|부리또|핫도그|붕어빵|호떡|도시락|분식|백반|정식|뷔페|한식|중식|일식|양식|식비|점심|저녁|아침|야식|맥도날드|맘스터치|서브웨이|롯데리아|버거킹|kfc|외식|술집|술값|술자리|맥주|소주|와인|회식|족발|보쌈|덮밥|쌈밥/],
   ["교통", /버스|지하철|택시|카카오t|카카오모빌리티|티머니|기차|ktx|srt|코레일|주유|기름값|교통|따릉이|톨게이트|하이패스|주차|비행기|항공/],
   ["미용/뷰티", /미용실|헤어|커트|컷트|펌|염색|네일|왁싱|화장품|뷰티|올리브영|스킨|로션|선크림/],
   ["쇼핑", /노트북|맥북|아이폰|갤럭시|아이패드|태블릿|에어팟|버즈|이어폰|헤드폰|모니터|키보드|마우스|충전기|가전|전자|옷|신발|운동화|구두|슬리퍼|모자|티셔츠|바지|치마|코트|패딩|가방|다이소|쿠팡|무신사|지그재그|에이블리|쇼핑|29cm|11번가|g마켓|지마켓|옥션|알리|테무|백화점|아울렛|유니클로|자라|네이버페이|스마트스토어/],
@@ -2982,7 +3000,7 @@ async function readTableFile(file) {
 // 머리줄/열 찾기
 const COL_RULES = {
   date: [/거래일시|거래일자|이용일자|승인일자|사용일자|결제일자|이용일시|승인일시|이용일|거래일|일자|날짜|일시|date/i],
-  desc: [/가맹점|이용처|이용하신곳|사용처|상호|merchant/i, /기재내용|거래내용|받는분|보낸분|입금자|거래처|내용|메모|비고|description|memo/i, /적요/],
+  desc: [/가맹점|이용처|이용하신곳|사용처|상호|merchant/i, /적요|기재내용|거래내용|받는분|보낸분|입금자|거래처|내용|description/i, /메모|비고|memo/i],
   out: [/출금액|출금|찾으신|지급액|지급|인출|withdraw/i],
   in: [/입금액|입금|맡기신|deposit/i],
   amount: [/이용금액|결제금액|승인금액|사용금액|청구금액|거래금액|결제원금|금액|amount/i],
@@ -3051,15 +3069,39 @@ async function handleBankFile(ev) {
         else if (map.desc < 0 && vals.some(v => /[가-힣a-z]/i.test(String(v)))) map.desc = c;
       }
     }
-    const extraCols = headerIdx > -1 ? header.map((h, i) => i).filter(i => COL_RULES.desc.some(re => re.test(String(header[i] ?? "").replace(/\s/g, "")))) : [];
-    const kindCol = headerIdx > -1 ? header.findIndex(h => /^(구분|입출금구분|거래구분|입출금|입출|유형|수입지출)$/.test(String(h ?? "").replace(/\s/g, ""))) : -1;
-    impState = { name: file.name, rows, headerIdx, header, map, extraCols, kindCol, items: [] };
+    const hcell = i => String(header[i] ?? "").replace(/\s/g, "");
+    const body = rows.slice(headerIdx + 1, headerIdx + 201);
+    const fill = c => body.length ? body.filter(r => r && String(r[c] ?? "").trim()).length / body.length : 0;
+    if (headerIdx > -1) {
+      // 내용 열: 규칙 순서대로 보되, 거의 비어 있는 열(메모 등)은 건너뛰기
+      const cands = [];
+      COL_RULES.desc.forEach((re, rank) => header.forEach((h, i) => { if (!cands.some(c => c.i === i) && re.test(hcell(i)) && i !== map.date && i !== map.amount && i !== map.out && i !== map.in) cands.push({ i, rank }); }));
+      const good = cands.find(c => fill(c.i) >= 0.3) || cands[0];
+      if (good) map.desc = good.i;
+    }
+    const extraCols = headerIdx > -1 ? header.map((h, i) => i).filter(i => COL_RULES.desc.some(re => re.test(hcell(i))) || /거래기관|기관|은행|상대|거래유형|거래종류/.test(hcell(i))) : [];
+    const kindCol = headerIdx > -1 ? header.findIndex((h, i) => /^(구분|입출금구분|거래구분|입출금|입출|유형|거래유형|거래종류|수입지출)$/.test(hcell(i))) : -1;
+    const bankSign = headerIdx > -1 && header.some((h, i) => /잔액|잔고/.test(hcell(i))); // 은행 통장: 마이너스=나간 돈
+    impState = { name: file.name, rows, headerIdx, header, map, extraCols, kindCol, bankSign, items: [], range: null };
     buildImportItems(); renderImport(); openModal("importModal");
   } catch (e) { showToast(e.message || "파일을 읽지 못했어요."); }
 }
+// 은행 적요 다듬기: "(주)우아한형제들_네이버페이" → "우아한형제들 (네이버페이)"
+function cleanBankDesc(t) {
+  let s = String(t || "").replace(/\(주\)|㈜|주식회사|\(유\)|\(사\)/g, "").replace(/\s+/g, " ").trim();
+  const m = s.match(/^(.+?)[_\-\/](네이버페이|카카오페이|토스페이|페이코|toss|naverpay|kakaopay)$/i);
+  if (m) s = m[1].trim() + " (" + m[2].replace(/^toss$/i, "토스") + ")";
+  return s.replace(/_/g, " ").trim();
+}
+// 내 계좌끼리 옮긴 돈(토스 비상금·모으기, 충전, 오픈뱅킹)은 쓴 돈/번 돈이 아니에요
+function isOwnTransfer(desc, extra) {
+  const d = String(desc || ""), all = d + " " + String(extra || "");
+  return /충전서비스|머니\s*충전|토스머니|페이머니|오픈뱅킹|비상금|생활비\s*$|^생활비|모으기|저금통|세이프박스|파킹|내\s*계좌|본인\s*계좌|계좌\s*간/.test(all) && !/캐[쉬시]백|이자|급여|월급/.test(d);
+}
 function buildImportItems() {
-  const { rows, headerIdx, map, extraCols = [], kindCol = -1 } = impState, items = [];
+  const { rows, headerIdx, map, extraCols = [], kindCol = -1, bankSign = false } = impState, items = [];
   const data = rows.slice(headerIdx + 1);
+  const signed = map.amount > -1 && data.some(r => r && parseAmt(r[map.amount]) < 0);
   data.forEach(r => {
     if (!r || map.date < 0) return;
     const date = parseCellDate(r[map.date]); if (!date) return;
@@ -3069,45 +3111,73 @@ function buildImportItems() {
       if (o > 0) amount = o; else if (i > 0) { amount = i; type = "income"; }
     } else if (map.amount > -1) {
       const v = parseAmt(r[map.amount]);
-      if (v < 0) { type = "income"; amount = -v; refund = true; } else amount = v; // 카드 내역의 마이너스 = 취소/환불
+      if (bankSign && signed) { amount = Math.abs(v); type = v < 0 ? "expense" : "income"; } // 통장: +들어옴 / -나감
+      else if (v < 0) { type = "income"; amount = -v; refund = true; } else amount = v; // 카드 내역의 마이너스 = 취소/환불
     }
-    if (kindCol > -1) { const k = String(r[kindCol] ?? ""); if (/수입|입금/.test(k)) type = "income"; else if (/지출|출금/.test(k)) type = "expense"; }
+    if (kindCol > -1 && !(bankSign && signed)) { const k = String(r[kindCol] ?? ""); if (/수입|입금/.test(k)) type = "income"; else if (/지출|출금|결제|송금/.test(k)) type = "expense"; }
     amount = Math.round(amount);
     if (!(amount > 0)) return;
-    const desc = String(map.desc > -1 ? r[map.desc] ?? "" : "").replace(/\s+/g, " ").trim() || (type === "income" ? "입금" : "출금");
+    const rawDesc = String(map.desc > -1 ? r[map.desc] ?? "" : "").replace(/\s+/g, " ").trim();
     const extra = extraCols.filter(i => i !== map.desc).map(i => String(r[i] ?? "")).join(" ");
-    const c = refund ? { category: "환급/이자", type: "income" } : categorize(desc + " " + extra, type);
-    const dup = entries.some(e => e.date === date && e.amount === amount && e.type === c.type);
-    items.push({ date, desc: refund ? desc + " (취소)" : desc, type: c.type, amount, category: c.category, dup, checked: !dup });
+    const desc = cleanBankDesc(rawDesc) || (type === "income" ? "입금" : "출금");
+    const transfer = isOwnTransfer(rawDesc, extra);
+    const c = refund ? { category: "환급/이자", type: "income" } : transfer ? { category: "내 계좌 이체", type } : categorize(desc + " " + rawDesc + " " + extra, type);
+    const dup = entries.some(e => e.date === date && e.amount === amount && e.type === c.type && (!e.description || e.description === desc || !desc));
+    items.push({ date, desc: refund ? desc + " (취소)" : desc, type: c.type, amount, category: c.category, dup, transfer, checked: !dup && !transfer });
   });
   impState.items = items;
+  const ds = items.map(i => i.date).sort();
+  impState.minDate = ds[0] || ""; impState.maxDate = ds[ds.length - 1] || "";
+  if (!impState.range) impState.range = { from: impState.minDate, to: impState.maxDate, q: "all" };
+}
+const inImpRange = (it) => { const r = impState.range || {}; return (!r.from || it.date >= r.from) && (!r.to || it.date <= r.to); };
+function setImpRange(from, to) {
+  const r = impState.range;
+  if (from !== null) r.from = from; if (to !== null) r.to = to;
+  if (r.from && r.to && r.from > r.to) [r.from, r.to] = [r.to, r.from];
+  r.q = ""; renderImport();
+}
+function quickImpRange(q) {
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth(), r = impState.range;
+  const first = (yy, mm) => toDateStr(new Date(yy, mm, 1)), last = (yy, mm) => toDateStr(new Date(yy, mm + 1, 0));
+  if (q === "all") { r.from = impState.minDate; r.to = impState.maxDate; }
+  else if (q === "this") { r.from = first(y, m); r.to = last(y, m); }
+  else if (q === "last") { r.from = first(y, m - 1); r.to = last(y, m - 1); }
+  else if (q === "3m") { r.from = first(y, m - 2); r.to = last(y, m); }
+  r.q = q; renderImport();
 }
 function renderImport() {
   const { header, map, items, name } = impState;
   const opt = (key, label) => `<label class="field"><span>${label}</span><select class="modal-input" onchange="impState.map['${key}']=+this.value;buildImportItems();renderImport()">
       <option value="-1">없음</option>${header.map((h, i) => `<option value="${i}" ${map[key] === i ? "selected" : ""}>${escapeHtml(colName(i) + ": " + (String(h ?? "").trim() || "(빈칸)"))}</option>`).join("")}</select></label>`;
   $("impMap").innerHTML = opt("date", "날짜") + opt("desc", "내용") + opt("out", "출금 (나간 돈)") + opt("in", "입금 (들어온 돈)") + opt("amount", "금액 (카드)");
-  const dups = items.filter(i => i.dup).length;
-  $("impInfo").textContent = `${name} · ${items.length}건을 찾았어요.${dups ? ` 이미 장부에 있는 것 같은 ${dups}건은 빼뒀어요.` : ""} 열이 틀리게 잡혔으면 아래에서 바꿔주세요.`;
-  $("impBody").innerHTML = items.length ? items.slice(0, 1000).map((it, i) => `<tr class="${it.dup ? "dup" : ""}">
+  const r = impState.range || {};
+  $("impFrom").value = r.from || ""; $("impTo").value = r.to || "";
+  $("impFrom").min = $("impTo").min = impState.minDate || ""; $("impFrom").max = $("impTo").max = impState.maxDate || "";
+  document.querySelectorAll("#impQuick [data-q]").forEach(b => b.classList.toggle("active", b.dataset.q === r.q));
+  const vis = items.map((it, i) => [it, i]).filter(([it]) => inImpRange(it));
+  const hidden = items.length - vis.length;
+  const dups = vis.filter(([i]) => i.dup).length, trs = vis.filter(([i]) => i.transfer && !i.dup).length;
+  $("impInfo").textContent = `${name} · ${items.length}건을 찾았어요.${hidden ? ` 기간 밖 ${hidden}건은 안 가져와요.` : ""}${dups ? ` 이미 장부에 있는 것 같은 ${dups}건은 빼뒀어요.` : ""}${trs ? ` 내 계좌끼리 옮긴 ${trs}건(비상금·충전 등)도 빼뒀어요. 넣고 싶으면 체크하세요.` : ""} 열이 틀리게 잡혔으면 아래에서 바꿔주세요.`;
+  $("impBody").innerHTML = vis.length ? vis.slice(0, 1000).map(([it, i]) => `<tr class="${it.dup ? "dup" : ""}">
       <td><input type="checkbox" ${it.checked ? "checked" : ""} onchange="impState.items[${i}].checked=this.checked;updateImpCount()" aria-label="가져올지 선택"/></td>
       <td style="white-space:nowrap">${it.date}</td>
-      <td><div class="desc" title="${escapeAttr(it.desc)}">${escapeHtml(it.desc)}${it.dup ? '<span class="dup-tag">이미 있음</span>' : ""}</div></td>
+      <td><div class="desc" title="${escapeAttr(it.desc)}">${escapeHtml(it.desc)}${it.dup ? '<span class="dup-tag">이미 있음</span>' : ""}${it.transfer ? '<span class="dup-tag">내 계좌 이체</span>' : ""}</div></td>
       <td><select onchange="impState.items[${i}].type=this.value"><option value="expense" ${it.type === "expense" ? "selected" : ""}>지출</option><option value="income" ${it.type === "income" ? "selected" : ""}>수입</option></select></td>
       <td class="num ${it.type === "income" ? "income" : ""}">${it.type === "income" ? "+" : "-"}${fmtWon(it.amount)}</td>
       <td><input type="text" value="${escapeAttr(it.category)}" list="catList" onchange="impState.items[${i}].category=this.value.trim()||impState.items[${i}].category" aria-label="카테고리"/></td>
-    </tr>`).join("") : `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);font-weight:700">가져올 줄이 없어요. 날짜·금액 열을 골라주세요.</td></tr>`;
+    </tr>`).join("") : `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);font-weight:700">${items.length ? "이 기간에는 내역이 없어요. 기간을 바꿔보세요." : "가져올 줄이 없어요. 날짜·금액 열을 골라주세요."}</td></tr>`;
   updateImpCount();
 }
 function updateImpCount() {
-  const n = impState.items.filter(i => i.checked).length;
-  $("impCount").textContent = `${impState.items.length}건 중 ${n}건 선택`;
-  $("impAll").checked = n > 0 && n === impState.items.length;
+  const vis = impState.items.filter(inImpRange), n = vis.filter(i => i.checked).length;
+  $("impCount").textContent = `이 기간 ${vis.length}건 중 ${n}건 선택`;
+  $("impAll").checked = n > 0 && n === vis.length;
   $("impGo").textContent = n ? `${n}건 가져오기` : "가져오기";
 }
-function toggleImpAll(on) { impState.items.forEach(i => i.checked = on); renderImport(); }
+function toggleImpAll(on) { impState.items.filter(inImpRange).forEach(i => i.checked = on); renderImport(); }
 function confirmImport() {
-  const pick = impState.items.filter(i => i.checked);
+  const pick = impState.items.filter(i => i.checked && inImpRange(i));
   if (!pick.length) { showToast("가져올 내역을 골라주세요"); return; }
   const added = pick.map(it => ({ id: newId(), type: it.type, date: it.date, description: it.desc, amount: it.amount, category: it.category, source: "import" }));
   added.forEach(e => linkToSaving(e, added));
