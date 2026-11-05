@@ -332,6 +332,9 @@
   .field > span { font-size: 11.5px; font-weight: 800; color: var(--muted); padding-left: 4px; }
 
   [hidden] { display: none !important; }
+  .nick-row { display: flex; gap: 8px; }
+  .nick-row .modal-input { flex: 1; min-width: 0; }
+  .nick-save { flex: 0 0 auto; padding: 10px 18px; }
   /* ============ 처음 화면: 로그인 / 회원가입 ============ */
   .auth-gate { position: fixed; inset: 0; z-index: 1100; background: var(--cream); display: flex; align-items: center; justify-content: center;
     padding: calc(20px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
@@ -969,6 +972,11 @@
   <div class="modal-content modal-wide">
     <h3 class="modal-title">설정</h3>
     <div class="set-section">
+      <div class="sub-title">내 닉네임</div>
+      <div class="nick-row"><input id="setNick" class="modal-input" type="text" maxlength="8" placeholder="최대 8자" onkeydown="if(event.key==='Enter'&&!event.isComposing)saveNickFromSettings()" /><button class="modal-btn btn-save nick-save" onclick="saveNickFromSettings()">저장</button></div>
+      <p class="modal-desc" id="nickDesc">닉네임을 정하면 가계부 이름이 'OO의 가계부'로 바뀌어요.</p>
+    </div>
+    <div class="set-section">
       <div class="sub-title">기기 연결</div>
       <div class="sync-card" id="syncInfo"></div>
     </div>
@@ -1110,6 +1118,7 @@
       <button type="button" class="seg-btn active" data-auth="in" onclick="setAuthMode('in')">로그인</button>
       <button type="button" class="seg-btn" data-auth="up" onclick="setAuthMode('up')">회원가입</button>
     </div>
+    <label class="field" id="lgNickField" hidden><span>닉네임 (가계부 이름이 돼요 · 최대 8자)</span><input id="lgNick" class="modal-input" type="text" maxlength="8" autocomplete="nickname" placeholder="예: 지수" oninput="nickPreview()" /></label>
     <label class="field"><span>이메일</span><input id="lgEmail" class="modal-input" type="email" autocomplete="email" placeholder="example@gmail.com" /></label>
     <label class="field"><span>비밀번호 (6자 이상)</span><input id="lgPw" class="modal-input" type="password" autocomplete="current-password" /></label>
     <label class="field" id="lgPw2Field" hidden><span>비밀번호 한 번 더</span><input id="lgPw2" class="modal-input" type="password" autocomplete="new-password" /></label>
@@ -1117,6 +1126,19 @@
     <button type="submit" class="modal-btn btn-save auth-main" id="authBtn">로그인</button>
     <button type="button" class="auth-skip" onclick="skipAuth()">로그인 없이 이 기기에서만 쓰기</button>
   </form>
+</div>
+
+<!-- ============ 팝업: 닉네임 정하기 ============ -->
+<div class="modal-overlay" id="nickModal">
+  <div class="modal-content">
+    <h3 class="modal-title">닉네임을 정해주세요</h3>
+    <p class="modal-desc" id="nickModalDesc">가계부 이름이 'OO의 가계부'로 바뀌어요. 설정에서 언제든 바꿀 수 있어요.</p>
+    <input id="nickModalInput" class="modal-input" type="text" maxlength="8" placeholder="최대 8자" oninput="$('nickModalDesc').textContent = (cleanNick(this.value) || 'OO') + '의 가계부로 바뀌어요.'" onkeydown="if(event.key==='Enter'&&!event.isComposing)saveNickFromModal()" />
+    <div class="modal-btns">
+      <button class="modal-btn btn-cancel" onclick="closeModal('nickModal')">나중에</button>
+      <button class="modal-btn btn-save" onclick="saveNickFromModal()">정하기</button>
+    </div>
+  </div>
 </div>
 
 <!-- ============ 팝업: 확인 ============ -->
@@ -2639,6 +2661,8 @@ function openSettings(scrollTo) {
 }
 function renderSettings() {
   updateSpiceUI(); renderSyncInfo();
+  if (document.activeElement !== $("setNick")) $("setNick").value = settings.nickname || "";
+  $("nickDesc").textContent = settings.nickname ? `지금은 '${titleFor(settings.nickname)}'예요. 최대 ${NICK_MAX}자까지 쓸 수 있어요.` : "닉네임을 정하면 가계부 이름이 'OO의 가계부'로 바뀌어요.";
   document.querySelectorAll("#layoutSeg [data-layout]").forEach(b => b.classList.toggle("active", b.dataset.layout === layoutPref()));
   const d = daysSinceBackup(), kb = storageBytes() / 1024;
   $("backupInfo").textContent = `${d === null ? "아직 백업한 적이 없어요." : d === 0 ? "오늘 백업했어요." : `마지막 백업: ${d}일 전.`} 저장 공간 약 ${kb >= 1024 ? (kb / 1024).toFixed(1) + "MB" : Math.max(1, Math.round(kb)) + "KB"} / 5MB 사용${kb > 4 * 1024 ? " — 거의 찼어요. 위시리스트 사진을 줄여주세요." : ""}`;
@@ -3440,7 +3464,7 @@ async function startSupabaseSync(user) {
     del: async (id) => { const { error } = await sb.from("ledger_docs").delete().eq("user_id", uid).eq("doc_id", id); if (error) throw { code: "unavailable", message: error.message }; },
   };
   setSync("connecting");
-  try { await handleFirstSnapshot(await sbFetchAll()); }
+  try { await handleFirstSnapshot(await sbFetchAll()); applyAccountNick(user); }
   catch (e) { setSync("error"); setTimeout(() => { if (cloud.uid === uid && !cloud.ready) { cloud.uid = null; startSupabaseSync(user); } }, 5000); return; }
   if (sb.channel) {
     cloud.channel = sb.channel("ledger-" + uid)
@@ -3448,6 +3472,12 @@ async function startSupabaseSync(user) {
       .subscribe();
   }
   if (isOpen("settingsModal")) renderSettings();
+}
+function applyAccountNick(user) {
+  if (settings.nickname) return;
+  const metaNick = cleanNick(user && user.user_metadata && user.user_metadata.nickname);
+  if (metaNick) setNickname(metaNick, true);
+  else setTimeout(() => { if (!settings.nickname && !isOpen("confirmModal")) openNickModal(); }, 900);
 }
 function scheduleRemoteCheck() { clearTimeout(remoteCheckTimer); remoteCheckTimer = setTimeout(remoteCheck, 600); }
 async function remoteCheck() {
@@ -3463,12 +3493,37 @@ function stopSupabaseSync() {
   setSync("signin");
   if (isOpen("settingsModal")) renderSettings();
 }
+const NICK_MAX = 8;
+function cleanNick(v) { return [...String(v || "").replace(/\s+/g, " ").trim()].slice(0, NICK_MAX).join(""); }
+function titleFor(nick) { return nick ? nick + "의 가계부" : "나의 가계부"; }
+function setNickname(nick, quiet) {
+  nick = cleanNick(nick);
+  const oldTitle = $("appTitle").value.trim(), oldAuto = titleFor(settings.nickname || "");
+  settings.nickname = nick; saveSettings();
+  // 제목을 직접 바꾼 적 없으면(기본 이름이면) 닉네임 이름으로 바꿔요
+  if (!oldTitle || oldTitle === oldAuto || oldTitle === "나의 가계부") { $("appTitle").value = titleFor(nick); safeSet(KEYS.title, titleFor(nick)); }
+  schedulePush();
+  if (isOpen("settingsModal")) renderSettings();
+  if (!quiet) showToast(nick ? `반가워요, ${nick}님!` : "닉네임을 지웠어요");
+}
+function saveNickFromSettings() {
+  const v = cleanNick($("setNick").value);
+  if (v === (settings.nickname || "")) { showToast("이미 이 닉네임이에요"); return; }
+  setNickname(v);
+}
+function openNickModal() { $("nickModalInput").value = ""; openModal("nickModal"); setTimeout(() => $("nickModalInput").focus(), 60); }
+function saveNickFromModal() {
+  const v = cleanNick($("nickModalInput").value);
+  if (!v) { $("nickModalDesc").textContent = "한 글자 이상 적어주세요."; return; }
+  closeModal("nickModal"); setNickname(v);
+}
+function nickPreview() { const v = cleanNick($("lgNick").value); $("authTitle").textContent = v ? titleFor(v) + "을 만들어요" : "처음 오셨군요!"; }
 let authMode = "in";
 const AUTH_SKIP = "expense-auth-skip";
 function setAuthMode(m) {
   authMode = m;
   document.querySelectorAll("#authGate [data-auth]").forEach(b => b.classList.toggle("active", b.dataset.auth === m));
-  $("lgPw2Field").hidden = m !== "up";
+  $("lgPw2Field").hidden = m !== "up"; $("lgNickField").hidden = m !== "up";
   $("lgPw").autocomplete = m === "up" ? "new-password" : "current-password";
   $("authTitle").textContent = m === "up" ? "처음 오셨군요!" : "다시 만나서 반가워요";
   $("authDesc").textContent = m === "up" ? "이메일과 비밀번호만 정하면 끝이에요. 인증 메일이 한 번 가요." : "로그인하면 폰·컴퓨터 어디서 열어도 같은 가계부가 보여요.";
@@ -3512,9 +3567,11 @@ async function doSignUp() {
   const email = $("lgEmail").value.trim(), password = $("lgPw").value;
   if (!email || password.length < 6) { authMsg("이메일과 6자 이상 비밀번호를 적어주세요."); return; }
   if (password !== $("lgPw2").value) { authMsg("비밀번호 두 개가 서로 달라요."); return; }
+  const nick = cleanNick($("lgNick").value);
+  if (!nick) { authMsg("닉네임을 적어주세요. (최대 8자)"); return; }
   authMsg("가입하는 중…", true);
   const redirect = /^https?:/.test(location.href) ? location.href.split("#")[0] : undefined;
-  const { data, error } = await sb.auth.signUp({ email, password, options: redirect ? { emailRedirectTo: redirect } : {} });
+  const { data, error } = await sb.auth.signUp({ email, password, options: Object.assign({ data: { nickname: nick } }, redirect ? { emailRedirectTo: redirect } : {}) });
   if (error) { authMsg(authMessage(error)); return; }
   if (data && data.session) { hideAuthGate(); showToast("가입하고 로그인했어요"); }
   else if (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) { setAuthMode("in"); authMsg("이미 가입된 이메일이에요. 비밀번호로 로그인해주세요."); }
