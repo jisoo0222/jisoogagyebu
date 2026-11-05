@@ -16,6 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="지계부">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20112%22%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22108%22%20rx%3D%2244%22%20ry%3D%223.6%22%20fill%3D%22%234A3426%22%20opacity%3D%22.08%22/%3E%3Cpath%20d%3D%22M8%2090%20C3%2058%2026%2030%2060%2030%20C94%2030%20117%2058%20112%2090%20C110%20102%2096%20107%2060%20107%20C24%20107%2010%20102%208%2090Z%22%20fill%3D%22%23FFD84D%22/%3E%3Cpath%20d%3D%22M11%2088%20C28%2099%2092%2099%20109%2088%20C109%20101%2096%20107%2060%20107%20C24%20107%2011%20101%2011%2088Z%22%20fill%3D%22%23F3C13A%22%20opacity%3D%22.45%22/%3E%3Cellipse%20cx%3D%2238%22%20cy%3D%2248%22%20rx%3D%2211%22%20ry%3D%225.5%22%20transform%3D%22rotate%28-28%2038%2048%29%22%20fill%3D%22%23FFFFFF%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M60%2031%20C60%2024%2060%2019%2058.5%2014%22%20stroke%3D%22%236CBF97%22%20stroke-width%3D%224.2%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M58%2015%20C49%205%2035%206%2032%2014%20C41%2022%2052%2021%2058%2015Z%22%20fill%3D%22%238FD0B0%22/%3E%3Cpath%20d%3D%22M59.5%2015%20C65%203%2081%202%2086%2010%20C79%2020%2066%2021%2059.5%2015Z%22%20fill%3D%22%236CBF97%22/%3E%3Cellipse%20cx%3D%2233%22%20cy%3D%2278%22%20rx%3D%228.5%22%20ry%3D%225.2%22%20fill%3D%22%23FFA3B3%22%20opacity%3D%22.9%22/%3E%3Cellipse%20cx%3D%2287%22%20cy%3D%2278%22%20rx%3D%228.5%22%20ry%3D%225.2%22%20fill%3D%22%23FFA3B3%22%20opacity%3D%22.9%22/%3E%3Cellipse%20cx%3D%2247%22%20cy%3D%2268%22%20rx%3D%224.8%22%20ry%3D%226.4%22%20fill%3D%22%234A3426%22/%3E%3Cellipse%20cx%3D%2273%22%20cy%3D%2268%22%20rx%3D%224.8%22%20ry%3D%226.4%22%20fill%3D%22%234A3426%22/%3E%3Ccircle%20cx%3D%2245.6%22%20cy%3D%2265.6%22%20r%3D%221.7%22%20fill%3D%22%23fff%22/%3E%3Ccircle%20cx%3D%2271.6%22%20cy%3D%2265.6%22%20r%3D%221.7%22%20fill%3D%22%23fff%22/%3E%3Cpath%20d%3D%22M53%2078%20q7%207%2014%200%22%20stroke%3D%22%234A3426%22%20stroke-width%3D%223.2%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,22 +65,8 @@
     --display: 'Jua', 'Nanum Gothic', sans-serif;
     --body: 'Nanum Gothic', -apple-system, sans-serif;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --ink: #F3EEE8; --cream: #1B1917; --paper: #262320; --line: #3A3531; --muted: #A79E95;
-      --hover-line: #4C4640; --placeholder: #7E756C; --dash: #524A43;
-      --income: #66CBA3; --warn: #F2849A; --glass: rgba(255, 255, 255, 0.55); --glass-strong: rgba(255, 255, 255, 0.7);
-      --overlay: rgba(0, 0, 0, 0.55); --shadow-up: rgba(0, 0, 0, 0.3);
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --ink: #F3EEE8; --cream: #1B1917; --paper: #262320; --line: #3A3531; --muted: #A79E95;
-    --hover-line: #4C4640; --placeholder: #7E756C; --dash: #524A43;
-    --income: #66CBA3; --warn: #F2849A; --glass: rgba(255, 255, 255, 0.55); --glass-strong: rgba(255, 255, 255, 0.7);
-    --overlay: rgba(0, 0, 0, 0.55); --shadow-up: rgba(0, 0, 0, 0.3);
-    color-scheme: dark;
-  }
+  /* 다크 모드는 쓰지 않아요: 기기 설정과 상관없이 항상 밝은 화면 */
+  :root, :root[data-theme="dark"] { color-scheme: light; }
   body[data-accent="pink"] { --point: var(--pink); --point-deep: #E57D93; }
   body[data-accent="mint"] { --point: var(--mint); --point-deep: #55AD8C; }
   body[data-accent="sky"]  { --point: var(--sky);  --point-deep: #5A9BDB; }
