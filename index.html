@@ -99,7 +99,7 @@
     flex: 1; min-width: 0; display: flex; flex-direction: column;
     background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-xl); padding: 22px;
   }
-  #ledgerSideWrap, #wishSideWrap { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  #ledgerSideWrap, #wishSideWrap, #tripSideWrap { display: flex; flex-direction: column; gap: 14px; flex: 1; }
   .block { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-xl); }
 
   /* ============ 헤더 ============ */
@@ -293,6 +293,34 @@
   .wish-summary .mascot { position: absolute; right: 16px; top: 18px; z-index: 1; }
   .wish-cap { position: relative; z-index: 1; margin-top: 12px; font-size: 12px; font-weight: 800; }
   #wishlist { flex: 1; overflow-y: auto; margin-bottom: 16px; }
+  /* ============ 여행 ============ */
+  .trip-body { flex: 1; overflow-y: auto; margin: 0 -6px 16px 0; padding-right: 6px; min-height: 0; }
+  #tripInput { flex: 1; min-width: 0; border: none; background: transparent; outline: none; font-family: var(--body); font-size: 14px; font-weight: 700; color: var(--ink); padding: 8px 0; }
+  #tripInput::placeholder { color: var(--placeholder); font-weight: 400; }
+  .trip-summary .trip-status { background: var(--paper); color: var(--ink); border-radius: var(--pill); padding: 4px 10px; font-size: 11.5px; font-weight: 800; }
+  .trip-summary .summary-amount small { font-family: var(--body); font-size: 13px; font-weight: 800; margin-left: 4px; }
+  .trip-summary .stat-sub { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trip-summary .trip-rate { position: relative; z-index: 1; margin-top: 10px; font-size: 12px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .trip-summary .trip-empty { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; font-weight: 800; font-size: 14px; line-height: 1.5; }
+  .trip-list-card { padding: 12px; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+  .trip-list-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; padding: 0 4px 2px; }
+  #tripListSide { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 260px; }
+  .trip-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; border: 1.5px solid transparent; background: var(--cream); border-radius: var(--r-md); padding: 9px 12px; cursor: pointer; font-family: var(--body); color: var(--ink); }
+  .trip-row:hover { border-color: var(--hover-line); }
+  .trip-row.active { background: var(--paper); border-color: var(--ink); }
+  .trip-row b { font-size: 13.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trip-row span { font-size: 11.5px; color: var(--muted); font-weight: 700; }
+  .trip-row .trip-row-amt { font-family: var(--display); font-size: 14px; color: var(--ink); grid-row: span 2; align-self: center; }
+  .trip-tag { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: var(--pill); background: #E3F3FF; color: #2D6FA8; font-size: 10.5px; font-weight: 800; vertical-align: 1px; }
+  .trip-cats { display: flex; flex-direction: column; gap: 4px; background: var(--cream); border-radius: var(--r-lg); padding: 10px 12px; margin-bottom: 14px; }
+  .trip-cats .hbar-row { grid-template-columns: 22px 78px 1fr auto; padding: 2px 0; }
+  .fx-row { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 11px 12px; margin-bottom: 6px; border-radius: var(--r-lg); background: var(--paper); border: 1px solid var(--line); }
+  .fx-row .fx-date { font-size: 12px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .fx-row .fx-main { min-width: 0; font-weight: 800; font-size: 14px; }
+  .fx-row .fx-main small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 700; }
+  .fx-row .fx-amt { font-family: var(--display); font-size: 15px; text-align: right; white-space: nowrap; }
+  .fx-add { width: 100%; margin-top: 4px; }
+  .fx-total { display: flex; justify-content: space-between; gap: 10px; background: var(--cream); border-radius: var(--r-lg); padding: 12px 14px; margin-bottom: 12px; font-size: 13px; font-weight: 800; flex-wrap: wrap; }
   .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
   .wish-card { border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--paper); display: flex; flex-direction: column; overflow: hidden; }
   .wish-head { padding: 14px 14px 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
@@ -642,7 +670,7 @@
     body:not(.m-layout) .app-container { height: 100%; min-height: 0; max-width: 1040px; gap: 18px; }
     body:not(.m-layout) .left-panel { width: 300px; gap: 10px; min-height: 0; overflow-y: auto; scrollbar-width: none; }
     body:not(.m-layout) .left-panel::-webkit-scrollbar { display: none; }
-    body:not(.m-layout) #ledgerSideWrap, body:not(.m-layout) #wishSideWrap { gap: 10px; flex: none; }
+    body:not(.m-layout) #ledgerSideWrap, body:not(.m-layout) #wishSideWrap, body:not(.m-layout) #tripSideWrap { gap: 10px; flex: none; }
     body:not(.m-layout) .right-panel { min-height: 0; padding: 18px 20px; }
     body:not(.m-layout) .header { padding: 0 2px; }
     body:not(.m-layout) .app-title-input { font-size: 21px; width: 150px; }
@@ -737,6 +765,7 @@
     <div class="main-mode-tabs">
       <button class="main-mode-btn active" id="btnModeLedger" onclick="switchMode('ledger')">가계부</button>
       <button class="main-mode-btn" id="btnModeWish" onclick="switchMode('wishlist')">위시리스트</button>
+      <button class="main-mode-btn" id="btnModeTrip" onclick="switchMode('trip')">여행</button>
     </div>
 
     <div id="ledgerSideWrap">
@@ -806,6 +835,14 @@
         <span id="wishMascotSlot"></span>
       </div>
     </div>
+
+    <div id="tripSideWrap" style="display:none;">
+      <div class="summary-card trip-summary" id="tripSummary"></div>
+      <div class="block trip-list-card">
+        <div class="trip-list-head"><span>내 여행</span><button class="btn-show-all" onclick="openTripModal()">+ 새 여행</button></div>
+        <div id="tripListSide"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ============ 오른쪽 패널 ============ -->
@@ -855,6 +892,26 @@
         <button class="btn-primary w-full" onclick="openWishModal()"><span>위시리스트에 담기</span><span class="arrow-dot" id="arrowWish"></span></button>
       </div>
     </div>
+
+    <div id="tripMainWrap" style="display:none; flex-direction:column; flex:1; min-height:0;">
+      <div class="list-header">
+        <div class="filter-group-left"><div class="list-title" id="tripTitle">여행</div></div>
+        <div class="filter-group-right">
+          <div class="chip-group" id="tripTabs">
+            <button class="seg-btn active" data-tt="spend" onclick="setTripTab('spend')">쓴 돈</button>
+            <button class="seg-btn" data-tt="fx" onclick="setTripTab('fx')">환전</button>
+          </div>
+        </div>
+      </div>
+      <div id="tripBody" class="trip-body"></div>
+      <div class="input-card" id="tripInputCard">
+        <div class="input-row">
+          <input id="tripInput" type="text" placeholder="라멘 1200엔, 택시 3000엔, 면세점 5만원" aria-label="여행 지출 입력" onkeydown="if(event.key==='Enter'&&!event.isComposing)handleTripAdd()" />
+          <button class="btn-primary" onclick="handleTripAdd()"><span>기록</span></button>
+        </div>
+        <div class="hint" id="tripHint">현지 돈으로 적으면 원화로 바꿔서 가계부에도 넣어요. 숫자만 적으면 여행 통화로 봐요.</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -872,6 +929,7 @@
       <label class="field full-col"><span>내용</span><input type="text" id="editDesc" class="modal-input" /></label>
       <label class="field"><span>금액</span><input type="number" id="editAmount" class="modal-input" /></label>
       <label class="field"><span>카테고리</span><input type="text" id="editCategory" class="modal-input" list="catList" /></label>
+      <label class="field full-col" id="editTripField"><span>여행</span><select id="editTrip" class="modal-input"></select></label>
     </div>
     <div class="modal-desc" style="margin-top:2px;">카테고리나 구분을 고치면 다음부터 같은 내용은 그렇게 분류할게요.</div>
     <div class="modal-btns">
@@ -1208,6 +1266,46 @@
   </div>
 </div>
 
+<!-- ============ 팝업: 여행 만들기/수정 ============ -->
+<div class="modal-overlay" id="tripModal">
+  <div class="modal-content">
+    <h3 class="modal-title" id="tripModalTitle">새 여행</h3>
+    <div class="fixed-add-row">
+      <label class="field full-col"><span>여행 이름</span><input id="tpName" class="modal-input" maxlength="20" placeholder="예: 오사카 먹방 여행" /></label>
+      <label class="field"><span>떠나는 날</span><input id="tpStart" type="date" class="modal-input" /></label>
+      <label class="field"><span>돌아오는 날</span><input id="tpEnd" type="date" class="modal-input" /></label>
+      <label class="field"><span>쓰는 돈</span><select id="tpCur" class="modal-input" onchange="updateTripRateLabel()"></select></label>
+      <label class="field"><span id="tpRateLabel">환율</span><input id="tpRate" type="number" step="any" min="0" class="modal-input" placeholder="비우면 대략 환율" /></label>
+      <label class="field full-col"><span>여행 예산 (원, 선택)</span><input id="tpBudget" type="number" min="0" class="modal-input" placeholder="예: 1000000" /></label>
+    </div>
+    <p class="modal-desc" id="tpRateDesc"></p>
+    <div class="modal-btns">
+      <button class="modal-btn btn-cancel" id="tpDelete" onclick="deleteTrip()" style="display:none;">여행 지우기</button>
+      <button class="modal-btn btn-cancel" onclick="closeModal('tripModal')">취소</button>
+      <button class="modal-btn btn-save" onclick="saveTrip()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 팝업: 환전 기록 ============ -->
+<div class="modal-overlay" id="fxModal">
+  <div class="modal-content">
+    <h3 class="modal-title">환전 기록</h3>
+    <p class="modal-desc">환전은 쓴 돈이 아니라 돈을 바꾼 거라 가계부 지출에는 안 들어가요. 대신 이 여행의 환율 계산에 써요.</p>
+    <div class="fixed-add-row">
+      <label class="field"><span>날짜</span><input id="fxDate" type="date" class="modal-input" /></label>
+      <label class="field"><span>어디서 (선택)</span><input id="fxMemo" class="modal-input" maxlength="20" placeholder="예: 트래블월렛, 공항" /></label>
+      <label class="field"><span>낸 돈 (원)</span><input id="fxKrw" type="number" min="0" class="modal-input" oninput="updateFxRate()" placeholder="500000" /></label>
+      <label class="field"><span id="fxForeignLabel">받은 돈</span><input id="fxForeign" type="number" step="any" min="0" class="modal-input" oninput="updateFxRate()" /></label>
+    </div>
+    <p class="modal-desc" id="fxRateText"></p>
+    <div class="modal-btns">
+      <button class="modal-btn btn-cancel" onclick="closeModal('fxModal')">취소</button>
+      <button class="modal-btn btn-save" onclick="saveFx()">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ 튜토리얼 (코치마크) ============ -->
 <div class="tour" id="tour" hidden>
   <div class="tour-spot" id="tourSpot"></div>
@@ -1241,6 +1339,7 @@
   <button data-mtab="list" onclick="setMTab('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>내역</button>
   <button data-mtab="cal" onclick="setMTab('cal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>달력</button>
   <button data-mtab="wish" onclick="setMTab('wish')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>위시</button>
+  <button data-mtab="trip" onclick="setMTab('trip')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5L4 11l1.5-1.5 7 .5 4-4a2 2 0 0 1 3 3l-4 4 .5 7L16.5 21 14 14.5"/><path d="M8 16l-2.5 2.5"/></svg>여행</button>
   <button data-mtab="more" id="navMore" onclick="openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>설정</button>
 </nav>
 
@@ -1327,13 +1426,13 @@ function catIcon(cat, size = 40) {
 const KEYS = {
   entries: "expense-entries", title: "expense-title", theme: "expense-theme", fixed: "expense-fixed",
   wish: "expense-wishlist", savings: "expense-savings", budgets: "expense-budgets", learned: "expense-learned",
-  recv: "expense-receivables", settings: "expense-settings", points: "expense-points",
+  recv: "expense-receivables", settings: "expense-settings", points: "expense-points", trips: "expense-trips",
 };
 const THEMES = ["butter", "peach", "pink", "lilac", "mint", "sky"];
 const SPICE_LABEL = { mild: "순한맛", normal: "보통맛", spicy: "매운맛" };
 const SPICE_DESC = { mild: "다정하게, 걱정은 살짝만 말해요.", normal: "할 말은 하지만 기분 나쁘지 않게 말해요.", spicy: "돌려 말하지 않아요. 팩트로 때려요." };
 
-let entries = [], fixedExpenses = [], savings = [], wishItems = [], receivables = [], pointLogs = [];
+let entries = [], fixedExpenses = [], savings = [], wishItems = [], receivables = [], pointLogs = [], trips = [];
 let budgets = { total: 0, cats: {} };
 let learned = {};
 let settings = { spice: "normal", lastBackupAt: 0 };
@@ -1463,15 +1562,10 @@ function changeTheme(themeName) {
 }
 function switchMode(mode) {
   currentAppMode = mode;
-  const ledger = mode === 'ledger';
-  $("btnModeLedger").classList.toggle("active", ledger);
-  $("btnModeWish").classList.toggle("active", !ledger);
-  $("ledgerSideWrap").style.display = ledger ? 'flex' : 'none';
-  $("ledgerMainWrap").style.display = ledger ? 'flex' : 'none';
-  $("wishSideWrap").style.display = ledger ? 'none' : 'flex';
-  $("wishMainWrap").style.display = ledger ? 'none' : 'flex';
-  if (ledger) renderAll(); else renderWishlist();
-  if (isMobile()) { const t = ledger ? (document.body.dataset.mtab === "wish" ? "home" : document.body.dataset.mtab) : "wish"; markMTab(t); }
+  const M = { ledger: ["btnModeLedger", "ledgerSideWrap", "ledgerMainWrap"], wishlist: ["btnModeWish", "wishSideWrap", "wishMainWrap"], trip: ["btnModeTrip", "tripSideWrap", "tripMainWrap"] };
+  for (const k in M) { const on = k === mode; $(M[k][0]).classList.toggle("active", on); $(M[k][1]).style.display = on ? "flex" : "none"; $(M[k][2]).style.display = on ? "flex" : "none"; }
+  if (mode === "wishlist") renderWishlist(); else if (mode === "trip") renderTrips(); else renderAll();
+  if (isMobile()) { const cur = document.body.dataset.mtab; const t = mode === "ledger" ? (cur === "wish" || cur === "trip" ? "home" : cur) : mode === "wishlist" ? "wish" : "trip"; markMTab(t); }
 }
 
 // =====================================================================
@@ -1485,12 +1579,13 @@ function loadData() {
   savings = readJSON(KEYS.savings, []);
   receivables = readJSON(KEYS.recv, []);
   pointLogs = readJSON(KEYS.points, []);
+  trips = readJSON(KEYS.trips, []);
   budgets = Object.assign({ total: 0, cats: {} }, readJSON(KEYS.budgets, {}));
   learned = readJSON(KEYS.learned, {});
   settings = Object.assign({ spice: "normal", lastBackupAt: 0 }, readJSON(KEYS.settings, {}));
   migrate(); autoRecategorize();
   refreshCatList(); updateSpiceUI(); updateBackupDot();
-  if (currentAppMode === 'ledger') renderAll(); else renderWishlist();
+  renderCurrent();
 }
 // 예전 데이터 형식 맞추기
 function migrate() {
@@ -1575,7 +1670,7 @@ const EXPENSE_RULES = [
   ["식비", /밥|비빔|식당|푸드|food|김밥|분식|한식|중식|일식|양식|국밥|짜장|짬뽕|탕수육|떡볶이|치킨|치맥|피자|피맥|마라탕|마라샹궈|훠궈|양꼬치|딤섬|햄버거|버거|초밥|스시|사시미|육회|물회|회덮밥|고기|삼겹살|목살|갈비|불고기|제육|오삼|곱창|막창|대창|순대|국밥|국수|칼국수|수제비|막국수|냉면|쌀국수|팟타이|우동|라멘|라면|소바|돈부리|규동|텐동|김밥|떡국|떡|만두|어묵|찌개|부대찌개|순두부|된장|감자탕|해장국|설렁탕|곰탕|삼계탕|닭갈비|닭발|찜닭|아구찜|갈비찜|해물|낙지|쭈꾸미|주꾸미|오징어|새우|게장|생선|고등어|연어|참치|장어|오리|전복|조개|굴|돈까스|돈가스|카츠|파스타|리조또|스테이크|오므라이스|카레|샐러드|포케|샌드위치|토스트|타코|부리또|핫도그|붕어빵|호떡|도시락|분식|백반|정식|뷔페|한식|중식|일식|양식|식비|점심|저녁|아침|야식|맥도날드|맘스터치|서브웨이|롯데리아|버거킹|kfc|외식|술집|술값|술자리|맥주|소주|와인|회식|족발|보쌈|덮밥|쌈밥/],
   ["교통", /버스|지하철|택시|카카오t|카카오모빌리티|티머니|기차|ktx|srt|코레일|주유|기름값|교통|따릉이|톨게이트|하이패스|주차|비행기|항공/],
   ["미용/뷰티", /미용실|헤어|커트|컷트|펌|염색|네일|왁싱|화장품|뷰티|올리브영|스킨|로션|선크림/],
-  ["쇼핑", /노트북|맥북|아이폰|갤럭시|아이패드|태블릿|에어팟|버즈|이어폰|헤드폰|모니터|키보드|마우스|충전기|가전|전자|옷|신발|운동화|구두|슬리퍼|모자|티셔츠|바지|치마|코트|패딩|가방|다이소|쿠팡|무신사|지그재그|에이블리|쇼핑|29cm|11번가|g마켓|지마켓|옥션|알리|테무|백화점|아울렛|유니클로|자라|네이버페이|스마트스토어/],
+  ["쇼핑", /돈키호테|면세|기념품|드럭스토어|다이소|무인양품|유니클로|노트북|맥북|아이폰|갤럭시|아이패드|태블릿|에어팟|버즈|이어폰|헤드폰|모니터|키보드|마우스|충전기|가전|전자|옷|신발|운동화|구두|슬리퍼|모자|티셔츠|바지|치마|코트|패딩|가방|다이소|쿠팡|무신사|지그재그|에이블리|쇼핑|29cm|11번가|g마켓|지마켓|옥션|알리|테무|백화점|아울렛|유니클로|자라|네이버페이|스마트스토어/],
   ["생활", /마트|이마트|홈플러스|롯데마트|코스트코|편의점|gs25|cu |씨유|세븐일레븐|이마트24|생활|휴지|세제|생필품|세탁|빨래|냄비|그릇|청소/],
   ["문화/여가", /영화|cgv|메가박스|롯데시네마|넷플릭스|티빙|디즈니|웨이브|왓챠|게임|스팀|노래방|코노|pc방|피시방|공연|콘서트|뮤지컬|전시|여가|문화|책|서점|교보|yes24|알라딘|여행|숙소|호텔|모텔|에어비앤비|야놀자|여기어때|볼링|방탈출|놀이공원|헬스|필라테스|요가/],
   ["의료", /병원|약국|의료|치과|한의원|안과|피부과|진료|처방|약값|영양제|(^|\s)약(\s|$)/],
@@ -1861,7 +1956,7 @@ function handleDelete(id) {
 function exportData() {
   const backup = {
     version: 3, exportedAt: new Date().toISOString(), title: $("appTitle").value, theme: safeGet(KEYS.theme) || "butter",
-    entries, fixedExpenses, savings, wishItems, budgets, learned, receivables, pointLogs, settings: { spice: settings.spice },
+    entries, fixedExpenses, savings, wishItems, budgets, learned, receivables, pointLogs, trips, settings: { spice: settings.spice },
   };
   downloadBlob(new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }), `가계부_백업_${getTodayStr()}.json`).then(ok => {
     if (!ok) return;
@@ -1900,16 +1995,16 @@ function importData(e) {
 function applyBackup(data) {
     {
       const arr = (v) => Array.isArray(v) ? v : [];
-      entries = data.entries; fixedExpenses = arr(data.fixedExpenses); wishItems = arr(data.wishItems); savings = arr(data.savings); receivables = arr(data.receivables); pointLogs = arr(data.pointLogs);
+      entries = data.entries; fixedExpenses = arr(data.fixedExpenses); wishItems = arr(data.wishItems); savings = arr(data.savings); receivables = arr(data.receivables); pointLogs = arr(data.pointLogs); trips = arr(data.trips);
       budgets = Object.assign({ total: 0, cats: {} }, data.budgets || {});
       learned = data.learned && typeof data.learned === "object" ? data.learned : {};
       if (data.settings && data.settings.spice) settings.spice = data.settings.spice;
       migrate();
-      saveEntries(); saveFixed(); saveSavings(); saveWish(); saveBudgetStore(); saveLearned(); saveRecv(); saveSettings(); savePoints();
+      saveEntries(); saveFixed(); saveSavings(); saveWish(); saveBudgetStore(); saveLearned(); saveRecv(); saveSettings(); savePoints(); saveTrips();
       if (data.title) { $("appTitle").value = data.title; safeSet(KEYS.title, data.title); }
       if (data.theme) changeTheme(data.theme);
       refreshCatList(); updateSpiceUI();
-      if (currentAppMode === 'ledger') renderAll(); else renderWishlist();
+      renderCurrent();
       if (isOpen("settingsModal")) renderSettings();
       showToast("백업을 불러왔어요");
     }
@@ -1933,6 +2028,8 @@ function openEditModal(id) {
   currentEditId = id;
   $("editType").value = entry.type; $("editDate").value = entry.date; $("editDesc").value = entry.description;
   $("editAmount").value = entry.amount; $("editCategory").value = entry.category;
+  $("editTripField").style.display = trips.length ? "" : "none";
+  $("editTrip").innerHTML = `<option value="">여행 아님</option>` + trips.map(t => `<option value="${escapeAttr(t.id)}" ${entry.tripId === t.id ? "selected" : ""}>✈ ${escapeHtml(t.name)}</option>`).join("");
   openModal("editModal");
 }
 function saveEditEntry() {
@@ -1943,10 +2040,11 @@ function saveEditEntry() {
   if ($("editDate").value) entry.date = $("editDate").value;
   entry.description = $("editDesc").value.trim() || entry.description;
   const nAmt = parseInt($("editAmount").value, 10);
-  if (nAmt > 0) entry.amount = nAmt;
+  if (nAmt > 0) { if (entry.fx && nAmt !== entry.amount) entry.fxLocked = true; entry.amount = nAmt; }
   const nCat = $("editCategory").value.trim();
   if (nCat) entry.category = nCat;
   if (entry.category !== SAVING_CAT) delete entry.savingId; else linkToSaving(entry);
+  if (trips.length) { const tv = $("editTrip").value; if (tv) entry.tripId = tv; else { delete entry.tripId; } }
 
   let sameN = 0;
   if (before.category !== entry.category || before.type !== entry.type) {
@@ -2699,7 +2797,8 @@ function selectDate(dateStr) {
   selectedDate = (selectedDate === dateStr) ? null : dateStr; renderAll();
   if (isMobile() && document.body.dataset.mtab === "cal" && selectedDate) setTimeout(() => $("ledgerMainWrap").scrollIntoView({ behavior: "smooth", block: "start" }), 30);
 }
-function renderAll() { renderCalendar(); renderSummary(); renderList(); updateBackupDot(); }
+function renderAll() { renderCalendar(); renderSummary(); renderList(); updateBackupDot(); if (currentAppMode === "trip") renderTrips(); }
+function renderCurrent() { if (currentAppMode === "wishlist") renderWishlist(); else renderAll(); }
 
 function renderCalendar() {
   $("calMonthTitle").textContent = `${currentYear}년 ${currentMonth + 1}월`;
@@ -2767,9 +2866,11 @@ function weekdayKo(dateStr, withYear = false) {
   return `${withYear ? d.getFullYear() + "년 " : ""}${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
 }
 function signedWon(e) { return (e.type === "income" ? "+" : "-") + fmtWon(e.amount); }
-function entryRow(e, subText) {
+function entryRow(e, subText, inTrip) {
+  const t = !inTrip && e.tripId ? trips.find(x => x.id === e.tripId) : null;
+  const sub = subText + (e.fx ? ` · ${fmtFx(e.fx.amt, e.fx.cur)}` : "");
   return `<div class="entry ${justAddedIds.includes(e.id) ? "just-added" : ""}">${catIcon(e.category)}
-    <div class="entry-main"><div class="entry-desc">${escapeHtml(e.description)}</div><div class="entry-cat">${escapeHtml(subText)}</div></div>
+    <div class="entry-main"><div class="entry-desc">${escapeHtml(e.description)}${t ? `<span class="trip-tag">✈ ${escapeHtml(t.name)}</span>` : ""}</div><div class="entry-cat">${escapeHtml(sub)}</div></div>
     <div class="entry-amount ${e.type === "income" ? "income" : ""}">${signedWon(e)}</div>
     <div class="entry-actions">
       <button class="action-btn edit-btn" data-id="${e.id}" aria-label="수정">${ICON_EDIT}</button>
@@ -3447,6 +3548,7 @@ function setMTab(tab, quiet) {
   if (tab === "more") { openSettings(); return; }
   markMTab(tab); safeSet(LOCAL.mtab, tab);
   if (tab === "wish") { if (currentAppMode !== "wishlist") switchMode("wishlist"); }
+  else if (tab === "trip") { if (currentAppMode !== "trip") switchMode("trip"); }
   else if (currentAppMode !== "ledger") switchMode("ledger");
   if (!quiet) window.scrollTo({ top: 0 });
 }
@@ -3492,7 +3594,7 @@ function encodeState() {
   const docs = {};
   docs.meta = clean({
     v: 1, title: $("appTitle").value, accent: document.body.dataset.accent || "butter",
-    settings, budgets, learned, fixed: fixedExpenses, savings, recv: receivables, wishOrder: wishItems.map(w => w.id),
+    settings, budgets, learned, fixed: fixedExpenses, savings, recv: receivables, wishOrder: wishItems.map(w => w.id), trips,
   });
   const byMonth = {};
   entries.forEach(e => (byMonth[e.date.slice(0, 7)] = byMonth[e.date.slice(0, 7)] || []).push(e));
@@ -3516,25 +3618,25 @@ function decodeState(map) {
   const order = meta.wishOrder || [];
   const wishes = [...order.map(id => wishById[id]).filter(Boolean), ...Object.values(wishById).filter(w => !order.includes(w.id))];
   return { title: meta.title, accent: meta.accent, settings: meta.settings || {}, budgets: meta.budgets || { total: 0, cats: {} }, learned: meta.learned || {},
-    fixed: meta.fixed || [], savings: meta.savings || [], recv: meta.recv || [], entries: ents, wish: wishes, points: (map.points && map.points.logs) || [] };
+    fixed: meta.fixed || [], savings: meta.savings || [], recv: meta.recv || [], entries: ents, wish: wishes, points: (map.points && map.points.logs) || [], trips: meta.trips || [] };
 }
 function localState() {
-  return { title: $("appTitle").value, accent: document.body.dataset.accent, settings, budgets, learned, fixed: fixedExpenses, savings, recv: receivables, entries, wish: wishItems, points: pointLogs };
+  return { title: $("appTitle").value, accent: document.body.dataset.accent, settings, budgets, learned, fixed: fixedExpenses, savings, recv: receivables, entries, wish: wishItems, points: pointLogs, trips };
 }
-function hasLocalData() { return entries.length || wishItems.length || fixedExpenses.length || savings.length || pointLogs.length; }
+function hasLocalData() { return entries.length || wishItems.length || fixedExpenses.length || savings.length || pointLogs.length || trips.length; }
 function applyState(st) {
   cloud.applying = true;
   try {
-    entries = st.entries || []; fixedExpenses = st.fixed || []; savings = st.savings || []; wishItems = st.wish || []; receivables = st.recv || []; pointLogs = st.points || [];
+    entries = st.entries || []; fixedExpenses = st.fixed || []; savings = st.savings || []; wishItems = st.wish || []; receivables = st.recv || []; pointLogs = st.points || []; trips = st.trips || [];
     budgets = Object.assign({ total: 0, cats: {} }, st.budgets); learned = st.learned || {};
     settings = Object.assign({ spice: "normal", lastBackupAt: 0 }, st.settings);
     if (st.title) { $("appTitle").value = st.title; safeSet(KEYS.title, st.title); }
     if (st.accent) changeTheme(st.accent);
     migrate();
-    saveEntries(); saveFixed(); saveSavings(); saveWish(); saveBudgetStore(); saveLearned(); saveRecv(); saveSettings(); savePoints();
+    saveEntries(); saveFixed(); saveSavings(); saveWish(); saveBudgetStore(); saveLearned(); saveRecv(); saveSettings(); savePoints(); saveTrips();
   } finally { cloud.applying = false; }
   refreshCatList(); updateSpiceUI(); updateBackupDot();
-  if (currentAppMode === "ledger") renderAll(); else renderWishlist();
+  renderCurrent();
   if (isOpen("settingsModal")) renderSettings();
   if (isOpen("fixedModal")) renderFixedModal();
   if (isOpen("savingListModal")) renderSavingListModal();
@@ -3545,7 +3647,7 @@ function mergeStates(remote, local) {
   const union = (a, b) => { const ids = new Set(a.map(x => x.id)); return [...a, ...b.filter(x => x && !ids.has(x.id))]; };
   return Object.assign({}, remote, {
     entries: union(remote.entries, local.entries), fixed: union(remote.fixed, local.fixed), savings: union(remote.savings, local.savings),
-    wish: union(remote.wish, local.wish), recv: union(remote.recv, local.recv), points: union(remote.points || [], local.points || []),
+    wish: union(remote.wish, local.wish), recv: union(remote.recv, local.recv), points: union(remote.points || [], local.points || []), trips: union(remote.trips || [], local.trips || []),
     budgets: { total: remote.budgets.total || local.budgets.total || 0, cats: Object.assign({}, local.budgets.cats, remote.budgets.cats) },
     learned: Object.assign({}, local.learned, remote.learned),
   });
@@ -3715,6 +3817,264 @@ function applyAccountNick(user) {
   else { nickPending = true; setTimeout(() => { nickPending = false; if (!settings.nickname && !isOpen("confirmModal")) openNickModal(); }, 900); }
 }
 // =====================================================================
+// 여행: 여행별로 쓴 돈·환전 정리 (쓴 돈은 가계부에도 같이 들어가요)
+// =====================================================================
+// rate = 1단위가 몇 원인지(대략). per = 환율을 보여줄 때 몇 단위 기준인지
+const CURRENCIES = {
+  KRW: { name: "원화 (국내 여행)", unit: "원", rate: 1, per: 1 },
+  JPY: { name: "일본 엔", unit: "엔", rate: 9.2, per: 100, words: "엔|円|jpy", sym: "¥" },
+  USD: { name: "미국 달러", unit: "달러", rate: 1380, per: 1, words: "달러|불|usd", sym: "\\$" },
+  EUR: { name: "유로", unit: "유로", rate: 1500, per: 1, words: "유로|eur", sym: "€" },
+  CNY: { name: "중국 위안", unit: "위안", rate: 190, per: 1, words: "위안|元|rmb|cny" },
+  TWD: { name: "대만 달러", unit: "대만달러", rate: 43, per: 1, words: "대만\\s*달러|ntd|twd|nt\\$" },
+  HKD: { name: "홍콩 달러", unit: "홍콩달러", rate: 177, per: 1, words: "홍콩\\s*달러|hkd|hk\\$" },
+  SGD: { name: "싱가포르 달러", unit: "싱달", rate: 1030, per: 1, words: "싱가포르\\s*달러|싱달|sgd" },
+  THB: { name: "태국 바트", unit: "바트", rate: 40, per: 1, words: "바트|thb", sym: "฿" },
+  VND: { name: "베트남 동", unit: "동", rate: 0.055, per: 1000, words: "동|vnd|₫" },
+  PHP: { name: "필리핀 페소", unit: "페소", rate: 24, per: 1, words: "페소|php|₱" },
+  MYR: { name: "말레이시아 링깃", unit: "링깃", rate: 300, per: 1, words: "링깃|myr|rm" },
+  IDR: { name: "인도네시아 루피아", unit: "루피아", rate: 0.087, per: 1000, words: "루피아|idr" },
+  AUD: { name: "호주 달러", unit: "호주달러", rate: 900, per: 1, words: "호주\\s*달러|aud" },
+  CAD: { name: "캐나다 달러", unit: "캐나다달러", rate: 1000, per: 1, words: "캐나다\\s*달러|cad" },
+  GBP: { name: "영국 파운드", unit: "파운드", rate: 1780, per: 1, words: "파운드|gbp", sym: "£" },
+  CHF: { name: "스위스 프랑", unit: "프랑", rate: 1600, per: 1, words: "프랑|chf" },
+};
+// '대만달러'가 '달러'보다 먼저 잡히도록 순서
+const CUR_ORDER = ["TWD", "HKD", "SGD", "AUD", "CAD", "JPY", "EUR", "CNY", "THB", "VND", "PHP", "MYR", "IDR", "GBP", "CHF", "USD"];
+let tripSel = null, tripTab = "spend", tripCtx = {};
+function saveTrips() { safeSet(KEYS.trips, JSON.stringify(trips)); schedulePush(); }
+function fmtFx(amt, cur) {
+  const c = CURRENCIES[cur] || { unit: cur };
+  return (+amt).toLocaleString("ko-KR", { maximumFractionDigits: 2 }) + c.unit;
+}
+function tripRate(t) {
+  const fx = (t.fx || []).filter(x => x.foreign > 0 && x.krw > 0);
+  if (fx.length) return fx.reduce((a, x) => a + x.krw, 0) / fx.reduce((a, x) => a + (+x.foreign), 0);
+  if (t.rate > 0) return t.rate;
+  return (CURRENCIES[t.cur] || CURRENCIES.KRW).rate;
+}
+// 환율이 바뀌면(환전 추가·수정) 그 여행에서 외화로 적은 내역의 원화 금액도 다시 계산
+function recalcTrip(t) {
+  const rate = tripRate(t); let n = 0;
+  entries.forEach(e => {
+    if (e.tripId !== t.id || !e.fx || e.fx.cur !== t.cur || e.fxLocked) return;
+    const v = Math.round(e.fx.amt * rate);
+    if (v > 0 && v !== e.amount) { e.amount = v; n++; }
+  });
+  if (n) saveEntries();
+  return n;
+}
+function tripRateSource(t) { return (t.fx || []).some(x => x.foreign > 0) ? "환전 평균" : t.rate > 0 ? "직접 넣은 환율" : "대략 환율"; }
+function daysBetween(a, b) { return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000); }
+function tripStatus(t) {
+  const today = getTodayStr();
+  if (today < t.start) return `D-${daysBetween(today, t.start)}`;
+  if (today <= t.end) return `여행 중 · ${daysBetween(t.start, today) + 1}일차`;
+  return "다녀왔어요";
+}
+function tripEntries(id) { return entries.filter(e => e.tripId === id).sort((a, b) => a.date.localeCompare(b.date) || (a.createdAt || 0) - (b.createdAt || 0)); }
+function tripSpent(id) { const l = tripEntries(id); return sumBy(l, e => e.type === "expense") - sumBy(l, e => e.type === "income"); }
+function currentTrip() {
+  if (!trips.length) return null;
+  let t = trips.find(x => x.id === tripSel);
+  if (!t) {
+    const today = getTodayStr();
+    t = trips.find(x => x.start <= today && today <= x.end) || [...trips].sort((a, b) => b.start.localeCompare(a.start))[0];
+    tripSel = t.id;
+  }
+  return t;
+}
+function selectTrip(id) { tripSel = id; tripCtx = {}; renderTrips(); }
+function setTripTab(tab) { tripTab = tab; renderTrips(); }
+function renderTrips() {
+  const t = currentTrip();
+  document.querySelectorAll("#tripTabs [data-tt]").forEach(b => b.classList.toggle("active", b.dataset.tt === tripTab));
+  $("tripTabs").style.display = t && t.cur !== "KRW" ? "" : "none";
+  $("tripInputCard").style.display = t && tripTab === "spend" ? "" : "none";
+  // 왼쪽: 요약 + 여행 목록
+  $("tripListSide").innerHTML = trips.length ? [...trips].sort((a, b) => b.start.localeCompare(a.start)).map(x => `<button class="trip-row ${t && x.id === t.id ? "active" : ""}" data-id="${escapeAttr(x.id)}" onclick="selectTrip(this.dataset.id)">
+      <b>${escapeHtml(x.name)}</b><span class="trip-row-amt">${fmtWon(tripSpent(x.id))}</span><span>${x.start.slice(5).replace("-", ".")} ~ ${x.end.slice(5).replace("-", ".")} · ${escapeHtml(tripStatus(x))}</span></button>`).join("")
+    : `<div class="fixed-empty">아직 여행이 없어요</div>`;
+  if (!t) {
+    $("tripSummary").innerHTML = `<div class="trip-empty">${mascotSVG("love", 58)}<div>여행 가요? 여행을 만들면<br>쓴 돈이랑 환전을 따로 모아 볼 수 있어요.</div><button class="pill-link" onclick="openTripModal()">새 여행 만들기 ›</button></div>`;
+    $("tripTitle").textContent = "여행";
+    $("tripBody").innerHTML = `<div class="empty">${mascotSVG("love", 96)}<div>여행 가서 쓴 돈은 여기에 따로 모여요.<br>가계부에도 같이 들어가니까 두 번 안 적어도 돼요.</div><button class="btn-primary" onclick="openTripModal()"><span>새 여행 만들기</span></button></div>`;
+    return;
+  }
+  const list = tripEntries(t.id), spent = tripSpent(t.id), rate = tripRate(t), cur = CURRENCIES[t.cur] || CURRENCIES.KRW;
+  const fxs = t.fx || [], fxKrw = fxs.reduce((a, x) => a + (+x.krw || 0), 0), fxForeign = fxs.reduce((a, x) => a + (+x.foreign || 0), 0);
+  const usedForeign = list.filter(e => e.fx && e.fx.cur === t.cur).reduce((a, e) => a + (e.type === "expense" ? e.fx.amt : -e.fx.amt), 0);
+  const left = fxForeign - usedForeign;
+  const foreignNote = t.cur !== "KRW" ? `<small>≈ ${fmtFx(Math.round(spent / rate * 100) / 100, t.cur)}</small>` : "";
+  const budget = t.budget > 0 ? `<div class="budget-line">예산 ${fmtWon(t.budget)} 중 ${Math.min(999, Math.round(spent / t.budget * 100))}% · ${spent <= t.budget ? `${fmtWon(t.budget - spent)} 남았어요` : `${fmtWon(spent - t.budget)} 넘었어요`}<div class="progress"><div style="width:${Math.min(100, spent / t.budget * 100)}%"></div></div></div>` : "";
+  $("tripSummary").innerHTML = `<div class="summary-top"><span class="summary-label">✈ ${escapeHtml(t.name)}</span><span class="trip-status">${escapeHtml(tripStatus(t))}</span></div>
+    <div class="summary-amount">${fmtWon(spent)}${foreignNote}</div>
+    ${t.cur !== "KRW" ? `<div class="stat-row">
+      <div class="stat"><div class="stat-label">환전한 돈</div><div class="stat-amount">${fmtWon(fxKrw)}</div><div class="stat-sub">${fxs.length ? fmtFx(fxForeign, t.cur) + " 받음" : "아직 없어요"}</div></div>
+      <div class="stat"><div class="stat-label">남은 ${escapeHtml(cur.unit)} (어림)</div><div class="stat-amount ${left < 0 ? "" : "income"}">${fxs.length ? fmtFx(Math.round(left * 100) / 100, t.cur) : "-"}</div><div class="stat-sub">환전한 돈 − ${escapeHtml(cur.unit)}로 쓴 돈</div></div>
+    </div>` : ""}
+    ${budget}
+    <div class="trip-rate"><span>${t.cur !== "KRW" ? `${cur.per}${escapeHtml(cur.unit)} ≈ ${(rate * cur.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원 · ${tripRateSource(t)}` : `${t.start.replace(/-/g, ".")} ~ ${t.end.slice(5).replace("-", ".")}`}</span><button class="pill-link" onclick="openTripModal('${escapeAttr(t.id)}')">수정 ›</button></div>`;
+  $("tripTitle").textContent = `${t.name}`;
+  if (tripTab === "fx" && t.cur !== "KRW") {
+    $("tripBody").innerHTML = `<div class="fx-total"><span>환전 ${fxs.length}번 · ${fmtWon(fxKrw)} → ${fmtFx(fxForeign, t.cur)}</span><span>평균 ${cur.per}${escapeHtml(cur.unit)} = ${(rate * cur.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</span></div>`
+      + [...fxs].sort((a, b) => b.date.localeCompare(a.date)).map(x => `<div class="fx-row"><span class="fx-date">${x.date.slice(5).replace("-", "/")}</span>
+        <div class="fx-main">${escapeHtml(x.memo || "환전")}<small>${cur.per}${escapeHtml(cur.unit)} = ${(x.krw / x.foreign * cur.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</small></div>
+        <div class="fx-amt">${fmtWon(x.krw)}<br><span class="income">→ ${fmtFx(x.foreign, t.cur)}</span></div>
+        <button class="action-btn" data-id="${escapeAttr(x.id)}" onclick="deleteFx(this.dataset.id)" aria-label="환전 기록 지우기">${ICON_DEL}</button></div>`).join("")
+      + `<button class="btn-secondary fx-add" onclick="openFxModal()"><span>+ 환전 기록하기</span></button>`;
+    return;
+  }
+  if (!list.length) {
+    $("tripBody").innerHTML = `<div class="empty">${mascotSVG("happy", 90)}<div>아래 칸에 <b>라멘 1200${escapeHtml(cur.unit === "원" ? "0원" : cur.unit)}</b>처럼 적어보세요.<br>원화로 바꿔서 가계부에도 같이 넣어둘게요.</div></div>`;
+    return;
+  }
+  // 카테고리 막대
+  const byCat = {};
+  list.filter(e => e.type === "expense").forEach(e => byCat[e.category] = (byCat[e.category] || 0) + e.amount);
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]), max = cats.length ? cats[0][1] : 1;
+  const catHTML = cats.length ? `<div class="trip-cats">${cats.slice(0, 5).map(([c, v]) => `<div class="hbar-row">${catIcon(c, 22)}<span class="hbar-name">${escapeHtml(c)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.max(4, v / max * 100)}%"></div></div><span class="hbar-val">${fmtWon(v)}</span></div>`).join("")}</div>` : "";
+  // 날짜별
+  const groups = {};
+  list.forEach(e => (groups[e.date] = groups[e.date] || []).push(e));
+  const total = daysBetween(t.start, t.end) + 1;
+  const dayHTML = Object.keys(groups).sort().reverse().map(d => {
+    const n = daysBetween(t.start, d) + 1, g = groups[d];
+    const label = n < 1 ? "떠나기 전" : n > total ? "다녀와서" : `${n}일차`;
+    const sum = sumBy(g, e => e.type === "expense") - sumBy(g, e => e.type === "income");
+    return `<div class="day-group"><div class="day-label"><span class="day-label-name">${label} · ${weekdayKo(d)}</span><span class="day-label-sum">${fmtWon(sum)}</span></div>${g.map(e => entryRow(e, e.category, true)).join("")}</div>`;
+  }).join("");
+  $("tripBody").innerHTML = catHTML + dayHTML;
+  $("tripBody").querySelectorAll(".del-btn").forEach(btn => btn.addEventListener("click", () => handleDelete(btn.dataset.id)));
+  $("tripBody").querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
+}
+// 여행 만들기 / 수정
+let editingTripId = null;
+function openTripModal(id) {
+  editingTripId = id || null;
+  const t = id ? trips.find(x => x.id === id) : null, today = getTodayStr();
+  $("tripModalTitle").textContent = t ? "여행 수정" : "새 여행";
+  $("tpCur").innerHTML = Object.entries(CURRENCIES).map(([k, c]) => `<option value="${k}">${c.name}${k !== "KRW" ? ` (${k})` : ""}</option>`).join("");
+  $("tpName").value = t ? t.name : ""; $("tpStart").value = t ? t.start : today; $("tpEnd").value = t ? t.end : today;
+  $("tpCur").value = t ? t.cur : "JPY"; $("tpRate").value = t && t.rate ? +(t.rate * (CURRENCIES[t.cur] || { per: 1 }).per).toFixed(4) : ""; $("tpBudget").value = t && t.budget ? t.budget : "";
+  $("tpDelete").style.display = t ? "" : "none";
+  updateTripRateLabel(); openModal("tripModal"); setTimeout(() => $("tpName").focus(), 60);
+}
+function updateTripRateLabel() {
+  const c = CURRENCIES[$("tpCur").value] || CURRENCIES.KRW, krw = $("tpCur").value === "KRW";
+  $("tpRate").disabled = krw;
+  $("tpRateLabel").textContent = krw ? "환율 (필요 없어요)" : `${c.per}${c.unit}에 몇 원?`;
+  $("tpRateDesc").textContent = krw ? "국내 여행이면 원화 그대로 적으면 돼요." : `비워두면 대략 ${c.per}${c.unit} ≈ ${(c.rate * c.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원으로 계산하고, 환전 기록을 넣으면 그 평균 환율로 계산해요.`;
+}
+function saveTrip() {
+  const name = $("tpName").value.trim(), start = $("tpStart").value, end = $("tpEnd").value, cur = $("tpCur").value;
+  if (!name) { showToast("여행 이름을 적어주세요"); return; }
+  if (!start || !end) { showToast("날짜를 골라주세요"); return; }
+  const [a, b] = start <= end ? [start, end] : [end, start];
+  const per = (CURRENCIES[cur] || { per: 1 }).per, rv = parseFloat($("tpRate").value);
+  const data = { name, start: a, end: b, cur, rate: cur !== "KRW" && rv > 0 ? rv / per : 0, budget: Math.max(0, parseInt($("tpBudget").value, 10) || 0) };
+  if (editingTripId) { const t = trips.find(x => x.id === editingTripId); if (t) Object.assign(t, data); }
+  else { const t = Object.assign({ id: newId(), fx: [], createdAt: Date.now() }, data); trips.push(t); tripSel = t.id; tripTab = "spend"; }
+  if (editingTripId) { const t = trips.find(x => x.id === editingTripId); if (t) recalcTrip(t); }
+  saveTrips(); closeModal("tripModal"); renderTrips();
+  showToast(editingTripId ? "여행을 고쳤어요" : `✈ ${name} 만들었어요! 아래 칸에 쓴 돈을 적어보세요`);
+}
+function deleteTrip() {
+  const t = trips.find(x => x.id === editingTripId); if (!t) return;
+  const n = entries.filter(e => e.tripId === t.id).length;
+  askConfirm("여행 지우기", `'${t.name}' 여행을 지울까요?${n ? `\n쓴 돈 ${n}건은 가계부에 그대로 남아요.` : ""}`, "지우기").then(ok => {
+    if (!ok) return;
+    const idx = trips.indexOf(t), linked = entries.filter(e => e.tripId === t.id).map(e => e.id);
+    trips.splice(idx, 1); entries.forEach(e => { if (e.tripId === t.id) delete e.tripId; });
+    if (tripSel === t.id) tripSel = null;
+    saveTrips(); saveEntries(); closeModal("tripModal"); renderCurrent();
+    offerUndo(`'${t.name}' 여행을 지웠어요`, () => {
+      trips.splice(Math.min(idx, trips.length), 0, t); entries.forEach(e => { if (linked.includes(e.id)) e.tripId = t.id; });
+      saveTrips(); saveEntries(); renderCurrent();
+    });
+  });
+}
+// 환전
+function openFxModal() {
+  const t = currentTrip(); if (!t) return;
+  const c = CURRENCIES[t.cur], today = getTodayStr();
+  $("fxDate").value = today <= t.end ? today : t.start; $("fxMemo").value = ""; $("fxKrw").value = ""; $("fxForeign").value = "";
+  $("fxForeignLabel").textContent = `받은 돈 (${c.unit})`; updateFxRate();
+  openModal("fxModal"); setTimeout(() => $("fxKrw").focus(), 60);
+}
+function updateFxRate() {
+  const t = currentTrip(); if (!t) return;
+  const c = CURRENCIES[t.cur], k = parseFloat($("fxKrw").value), f = parseFloat($("fxForeign").value);
+  $("fxRateText").textContent = k > 0 && f > 0 ? `환율: ${c.per}${c.unit} = ${(k / f * c.per).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}원` : `예: 50만원 내고 54,000${c.unit} 받았으면 그대로 적어주세요.`;
+}
+function saveFx() {
+  const t = currentTrip(); if (!t) return;
+  const k = Math.round(parseFloat($("fxKrw").value)), f = parseFloat($("fxForeign").value);
+  if (!(k > 0) || !(f > 0)) { showToast("낸 돈과 받은 돈을 둘 다 적어주세요"); return; }
+  t.fx = t.fx || [];
+  t.fx.push({ id: newId(), date: $("fxDate").value || getTodayStr(), krw: k, foreign: Math.round(f * 100) / 100, memo: $("fxMemo").value.trim() });
+  const n = recalcTrip(t);
+  saveTrips(); closeModal("fxModal"); renderTrips();
+  showToast(`환전 기록했어요 · 이제 이 환율로 계산해요${n ? ` (외화로 적은 ${n}건 원화 금액도 맞췄어요)` : ""}`);
+}
+function deleteFx(id) {
+  const t = currentTrip(); if (!t) return;
+  const i = (t.fx || []).findIndex(x => x.id === id); if (i < 0) return;
+  const x = t.fx.splice(i, 1)[0]; recalcTrip(t); saveTrips(); renderTrips();
+  offerUndo("환전 기록을 지웠어요", () => { t.fx.splice(i, 0, x); recalcTrip(t); saveTrips(); renderTrips(); });
+}
+// 여행 지출 입력: "라멘 1200엔", "$12.5 택시", "면세점 5만원", 숫자만 쓰면 여행 통화
+function tripParse(seg, t) {
+  let text = " " + seg + " ", foreign = null;
+  const rate = tripRate(t);
+  const num = (v, mul) => parseFloat(String(v).replace(/,/g, "")) * (mul === "만" ? 10000 : mul === "천" ? 1000 : 1);
+  for (const code of CUR_ORDER) {
+    const c = CURRENCIES[code];
+    let m = text.match(new RegExp("(\\d[\\d,]*(?:\\.\\d+)?)\\s*(만|천)?\\s*(?:" + c.words + ")(?![가-힣a-z])", "i"));
+    if (m) { foreign = { cur: code, amt: num(m[1], m[2]) }; text = text.replace(m[0], " "); break; }
+    if (c.sym) { m = text.match(new RegExp("(?:" + c.sym + ")\\s*(\\d[\\d,]*(?:\\.\\d+)?)")); if (m) { foreign = { cur: code, amt: num(m[1]) }; text = text.replace(m[0], " "); break; } }
+  }
+  const hasWon = /\d\s*(만|천)?\s*원/.test(text);
+  if (!foreign && !hasWon && t.cur !== "KRW") {
+    const m = text.match(/(\d[\d,]*(?:\.\d+)?)\s*(만|천)?(?![\d.,]*\s*(개|명|번|잔|병|박|일|시|분|인분|\/))/);
+    if (m && !/^\s*\d{1,2}\s*[\/.]\s*\d{1,2}/.test(text.slice(text.indexOf(m[0]) - 1))) { foreign = { cur: t.cur, amt: num(m[1], m[2]) }; text = text.replace(m[0], " "); }
+  }
+  let krw = null;
+  if (foreign) {
+    const r2 = foreign.cur === t.cur ? rate : CURRENCIES[foreign.cur].rate;
+    krw = Math.round(foreign.amt * r2);
+    text = text + ` ${krw}원`;
+  }
+  const r = parseOne(text.trim(), {});
+  if (foreign) { r.amount = krw; r.fx = { cur: foreign.cur, amt: Math.round(foreign.amt * 100) / 100 }; }
+  if (!r.explicitDate) {
+    const today = getTodayStr();
+    r.date = today >= t.start && today <= t.end ? today : (tripCtx.date || t.start);
+  } else tripCtx.date = r.date;
+  return r;
+}
+function handleTripAdd() {
+  const t = currentTrip(); if (!t) { openTripModal(); return; }
+  const raw = $("tripInput").value.trim(); if (!raw) return;
+  let parsed;
+  try { parsed = splitSegments(raw).map(seg => tripParse(seg, t)); }
+  catch (e) { $("tripHint").className = "hint err"; $("tripHint").textContent = e.message; return; }
+  parsed = parsed.filter(p => p.kind !== "point" && p.amount > 0);
+  if (!parsed.length) { $("tripHint").className = "hint err"; $("tripHint").textContent = "금액을 못 찾았어요. '라멘 1200엔'처럼 적어주세요."; return; }
+  const added = parsed.map(p => {
+    const e = { id: newId(), type: p.type, date: p.date, description: p.description, amount: p.amount, category: p.category, tripId: t.id, createdAt: Date.now() };
+    if (p.fx) e.fx = p.fx;
+    return e;
+  });
+  entries.unshift(...added); saveEntries(); refreshCatList();
+  justAddedIds = added.map(e => e.id);
+  $("tripInput").value = ""; $("tripHint").className = "hint ok";
+  $("tripHint").textContent = added.map(e => `${e.description} · ${e.category} · ${e.fx ? fmtFx(e.fx.amt, e.fx.cur) + " ≈ " : ""}${fmtWon(e.amount)}`).join(" / ") + " 기록했어요 (가계부에도 들어갔어요)";
+  renderTrips();
+  setTimeout(() => { justAddedIds = []; }, 1800);
+}
+
+// =====================================================================
 // 튜토리얼: 말랑이랑 같이 둘러보기
 // =====================================================================
 const TOUR_PC = [
@@ -3725,6 +4085,7 @@ const TOUR_PC = [
   { sel: ".calendar-card", mood: "surprised", title: "달력으로 한눈에", text: "날짜를 누르면 그날 쓴 것만 모아 보여줘. 빨간 점은 지출, 초록 동그라미는 무지출 날이야." },
   { sel: "#btnFixedManage", mood: "happy", title: "매달 나가는 돈은 여기", text: "월세·구독 같은 고정 지출이랑 적금을 한 번만 적어두면 매달 알아서 챙겨줘." },
   { sel: "#btnModeWish", mood: "love", title: "갖고 싶은 것도 모아봐", text: "위시리스트에 담고 목표를 정하면 언제쯤 살 수 있을지 계산해줄게." },
+  { sel: "#btnModeTrip", mood: "wink", title: "여행 갈 땐 여기!", text: "여행을 만들고 <b>라멘 1200엔</b>처럼 적으면 원화로 바꿔서 가계부에도 넣어줘. 환전한 돈도 따로 볼 수 있어." },
   { sel: ".data-actions-corner", mood: "wink", title: "구석에 있는 도구들", text: "백업, 그리고 ⚙ <b>설정</b>에서 은행·카드 엑셀 가져오기, 엑셀 내보내기, 색 바꾸기를 할 수 있어." },
   { mood: "proud", title: "이제 써볼까?", text: "첫 기록을 남겨봐! 다시 보고 싶으면 <b>설정 맨 아래 → 튜토리얼 다시 보기</b>." },
 ];
@@ -3734,7 +4095,7 @@ const TOUR_M = [
   { sel: "#ledgerSideWrap > .summary-card", mood: "proud", title: "이번 달 남은 돈", text: "들어온 돈에서 쓴 돈을 뺀 잔액이야.", tab: "home" },
   { sel: "#naggingBox", mood: "angry", title: "가끔 잔소리도 해", text: "너무 많이 쓰면 한마디 할게. 누르면 다음 잔소리!", tab: "home" },
   { sel: "#mQuick", mood: "surprised", title: "자주 쓰는 것들", text: "리포트·예산, 고정 지출·적금, 받을 돈, 포인트를 여기서 바로 열어.", tab: "home" },
-  { sel: "#mNav", mood: "wink", title: "아래 탭으로 이동", text: "내역·달력·위시를 오가고, <b>설정</b>에서 엑셀 가져오기랑 색 바꾸기를 할 수 있어.", tab: "home" },
+  { sel: "#mNav", mood: "wink", title: "아래 탭으로 이동", text: "내역·달력·위시·<b>여행</b>을 오가고, <b>설정</b>에서 엑셀 가져오기랑 색 바꾸기를 할 수 있어.", tab: "home" },
   { mood: "proud", title: "이제 써볼까?", text: "첫 기록을 남겨봐! 다시 보고 싶으면 <b>설정 맨 아래 → 튜토리얼 다시 보기</b>.", tab: "home" },
 ];
 let tour = null;
