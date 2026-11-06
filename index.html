@@ -209,7 +209,7 @@
   .cal-day-name:first-child { color: var(--dot-expense); }
   .cal-day {
     aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 12.5px; font-weight: 700; border-radius: 50%; cursor: pointer; position: relative; transition: background 0.15s;
+    font-size: 12.5px; font-weight: 700; border-radius: 9px; cursor: pointer; position: relative; transition: background 0.15s;
   }
   .cal-day:hover { background: var(--cream); }
   .cal-day.today { background: var(--ink); color: var(--paper); }
@@ -451,6 +451,18 @@
   .tile-value { font-family: var(--display); font-size: 18px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tile-sub { font-size: 11px; font-weight: 700; color: var(--muted); }
   .saving-cards { display: flex; flex-direction: column; gap: 10px; }
+  .saving-card-head { cursor: pointer; }
+  .sav-pay { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); font-size: 22px; font-weight: 700; line-height: 1; transition: transform .15s; }
+  .sav-pay:hover { transform: scale(1.06); }
+  .sav-pay.paid { background: var(--income); font-size: 18px; }
+  .sav-pay-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; }
+  .sav-pay-wrap small { font-size: 10px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .sav-forecast { margin-top: 10px; background: var(--cream); border-radius: var(--r-md); padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 12.5px; font-weight: 700; }
+  .sav-forecast span:nth-child(even) { text-align: right; font-weight: 800; }
+  .sav-forecast .big { font-family: var(--display); font-size: 18px; font-weight: 400; color: var(--ink); }
+  .sav-forecast .line { grid-column: 1 / -1; border-top: 1px dashed var(--hover-line); margin: 4px 0; }
+  .sav-forecast .note { grid-column: 1 / -1; font-size: 11px; color: var(--muted); }
+  .saving-form { border: 1.5px dashed var(--hover-line); border-radius: var(--r-lg); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
   .saving-card { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 16px 10px; background: var(--paper); }
   .saving-card.closed { opacity: 0.6; }
   .saving-card-head { display: flex; align-items: center; gap: 12px; }
@@ -735,7 +747,7 @@
     body:not(.m-layout) .calendar-card { padding: 12px 14px 10px; }
     body:not(.m-layout) .cal-header { font-size: 16px; margin-bottom: 6px; }
     body:not(.m-layout) .cal-nav { width: 26px; height: 26px; }
-    body:not(.m-layout) .cal-day { aspect-ratio: auto; height: 28px; font-size: 12px; }
+    body:not(.m-layout) .cal-day { aspect-ratio: 1; height: 28px; width: 28px; justify-self: center; font-size: 12px; border-radius: 8px; }
     body:not(.m-layout) .cal-dot, body:not(.m-layout) .cal-ring { bottom: 1px; width: 5px; height: 5px; }
     body:not(.m-layout) .cal-day-name { padding-bottom: 3px; }
     body:not(.m-layout) .cal-legend { margin-top: 6px; }
@@ -756,7 +768,7 @@
   }
   /* 화면이 낮은 PC(1366×768 등): 돈 계획까지 한 화면에 */
   @media (min-width: 901px) and (max-height: 820px) {
-    body:not(.m-layout) .cal-day { height: 24px; }
+    body:not(.m-layout) .cal-day { height: 25px; width: 25px; border-radius: 7px; }
     body:not(.m-layout) .cal-legend { margin-top: 3px; }
     body:not(.m-layout) .summary-card { padding: 12px 16px; }
     body:not(.m-layout) .summary-amount { font-size: 27px; margin: 0 0 8px; }
@@ -997,7 +1009,7 @@
 
 <!-- ============ 팝업: 고정 지출·수입 & 적금 ============ -->
 <div class="modal-overlay" id="fixedModal">
-  <div class="modal-content">
+  <div class="modal-content modal-wide">
     <h3 class="modal-title">고정 지출 &amp; 적금</h3>
     <div class="chip-group modal-tabs">
       <button class="seg-btn active" id="fixedTabFixed" onclick="switchFixedTab('fixed')">고정 지출·수입</button>
@@ -1021,10 +1033,11 @@
     </div>
 
     <div class="pane" id="savingPane" style="display:none;">
-      <p class="modal-desc">적금을 등록하면 모인 돈과 만기까지 남은 기간을 알려줘요.</p>
-      <div class="fixed-list-wrap" id="savingMiniList"></div>
-      <button class="btn-secondary w-full" onclick="openSavingListModal()"><span>적금 리스트 보기</span><span class="arrow-dot" id="arrowSavList"></span></button>
-      <div class="sub-title-row"><span class="sub-title" id="savFormTitle">새 적금</span><button class="btn-show-all" id="savCancelEdit" style="display:none;" onclick="resetSavingForm()">수정 그만두기</button></div>
+      <div class="tile-row" id="savingStats"></div>
+      <div class="saving-cards" id="savingCards"></div>
+      <button class="btn-secondary w-full" id="savAddToggle" onclick="showSavingForm()"><span>+ 새 적금 추가하기</span></button>
+      <div class="saving-form" id="savForm" hidden>
+      <div class="sub-title-row"><span class="sub-title" id="savFormTitle">새 적금</span><button class="btn-show-all" id="savCancelEdit" onclick="resetSavingForm()">닫기</button></div>
       <div class="fixed-add-row">
         <label class="field full-col"><span>적금 이름</span><input id="savName" class="modal-input" placeholder="예: 여행 적금" /></label>
         <label class="field"><span>월 납입액</span><input id="savAmount" class="modal-input" type="number" placeholder="300000" oninput="updateSavingPreview()" /></label>
@@ -1033,25 +1046,12 @@
         <label class="field"><span>기간 (개월)</span><input id="savMonths" class="modal-input" type="number" min="1" placeholder="12" oninput="updateSavingPreview()" /></label>
         <label class="field full-col"><span>연 이율 % (선택)</span><input id="savRate" class="modal-input" type="number" step="0.01" min="0" placeholder="3.5" oninput="updateSavingPreview()" /></label>
         <div class="saving-preview" id="savPreview" style="display:none;"></div>
-        <div class="form-btns"><button class="modal-btn btn-cancel" id="savSubmit" onclick="submitSaving()">적금 추가</button></div>
+        <div class="form-btns"><button class="modal-btn btn-save" id="savSubmit" onclick="submitSaving()">적금 추가</button></div>
       </div>
-      <button class="btn-apply-fixed" id="applySavingBtn" onclick="applySavingsToMonth()">이번 달 적금 납입 기록하기</button>
+      </div>
     </div>
 
     <button class="modal-btn btn-save" onclick="closeModal('fixedModal')">닫기</button>
-  </div>
-</div>
-
-<!-- ============ 팝업: 적금 리스트 ============ -->
-<div class="modal-overlay" id="savingListModal">
-  <div class="modal-content modal-wide">
-    <h3 class="modal-title">나의 적금</h3>
-    <div class="tile-row" id="savingStats"></div>
-    <div class="saving-cards" id="savingCards"></div>
-    <div class="modal-btns">
-      <button class="modal-btn btn-cancel" onclick="closeModal('savingListModal')">닫기</button>
-      <button class="modal-btn btn-save" id="applySavingBtn2" onclick="applySavingsToMonth()">이번 달 납입 기록하기</button>
-    </div>
   </div>
 </div>
 
@@ -1572,7 +1572,7 @@ function askConfirm(title, message, okLabel = "확인", cancelLabel = "취소") 
     openModal("confirmModal");
   });
 }
-function isOpen(id) { return $(id).classList.contains("show"); }
+function isOpen(id) { const el = $(id); return !!el && el.classList.contains("show"); }
 
 let toastTimer = null, undoAction = null;
 function showToast(text, withUndo = false, ms) {
@@ -1604,7 +1604,7 @@ function initTooltip() {
 // 초기화
 // =====================================================================
 function initSettings() {
-  ["arrowFixed", "arrowAdd", "arrowWish", "arrowSavList"].forEach(id => $(id).innerHTML = ARROW);
+  ["arrowFixed", "arrowAdd", "arrowWish"].forEach(id => { const el = $(id); if (el) el.innerHTML = ARROW; });
   $("arrowReport").innerHTML = CHEVRON;
   $("searchClear").innerHTML = ICON_DEL;
 
@@ -2221,9 +2221,7 @@ function switchFixedTab(tab) {
 function renderFixedModal() {
   const label = `${currentMonth + 1}월`;
   $("applyFixedBtn").textContent = `${label} 장부에 넣기`;
-  $("applySavingBtn").textContent = `${label} 적금 납입 기록하기`;
-  $("applySavingBtn2").textContent = `${label} 납입 기록하기`;
-  renderFixedList(); renderSavingMini();
+  renderFixedList(); renderSavingListModal();
 }
 function renderFixedList() {
   const wrap = $("fixedListWrap");
@@ -2297,6 +2295,48 @@ function addMonths(ym, n) { const [y, m] = ym.split("-").map(Number); return mon
 function savingEnd(s) { return addMonths(s.start, s.months - 1); }
 function isActiveIn(s, ym) { return s.status !== "closed" && ym >= s.start && ym <= savingEnd(s); }
 function savingInterest(amount, months, rate) { return rate > 0 ? Math.round(amount * (rate / 100) / 12 * months * (months + 1) / 2) : 0; }
+// 만기 예상: 실제로 넣은 돈(가계부 금액 그대로) + 앞으로 낼 돈 + 이자(단리, 넣은 달부터 만기까지)
+function savingForecast(s) {
+  const p = savingProgress(s), r = (s.rate || 0) / 100;
+  const idx = (ym) => { const [y1, m1] = s.start.split("-").map(Number), [y2, m2] = ym.split("-").map(Number); return (y2 - y1) * 12 + (m2 - m1); };
+  let interest = 0, paidPrincipal = 0;
+  entries.filter(e => e.savingId === s.id).forEach(e => { const k = Math.max(0, idx(e.date.slice(0, 7))); paidPrincipal += e.amount; interest += e.amount * r * Math.max(0, s.months - k) / 12; });
+  let futurePrincipal = 0, futureN = 0;
+  for (let k = 0; k < s.months; k++) {
+    const ym = addMonths(s.start, k);
+    if (p.paidMonths.has(ym)) continue;
+    if (s.status === "closed") break;
+    futurePrincipal += s.amount; futureN++; interest += s.amount * r * (s.months - k) / 12;
+  }
+  interest = Math.round(interest);
+  const tax = Math.round(interest * 0.154);
+  return { paidPrincipal, futurePrincipal, futureN, interest, tax, total: paidPrincipal + futurePrincipal + interest, afterTax: paidPrincipal + futurePrincipal + interest - tax };
+}
+let savingOpen = new Set();
+function toggleSavingOpen(id) { savingOpen.has(id) ? savingOpen.delete(id) : savingOpen.add(id); renderSavingListModal(); }
+// + 버튼: 보고 있는 달 납입을 가계부에 기록 (이미 넣었으면 취소할지 물어봐요)
+function paySaving(id) {
+  const s = savings.find(x => x.id === id); if (!s) return;
+  const ym = monthPrefixOf(currentYear, currentMonth), label = `${currentMonth + 1}월`;
+  const done = entries.find(e => e.savingId === s.id && e.date.startsWith(ym));
+  if (done) {
+    askConfirm("납입 취소", `${label} '${s.name}' 납입(${fmtWon(done.amount)})을 가계부에서 지울까요?`, "지우기").then(ok => {
+      if (!ok) return;
+      entries = entries.filter(e => e !== done); saveEntries(); renderAll(); renderFixedModal();
+      offerUndo(`${label} 납입을 지웠어요`, () => { entries.unshift(done); saveEntries(); renderAll(); renderFixedModal(); });
+    });
+    return;
+  }
+  if (!isActiveIn(s, ym)) { showToast(`${label}은 '${s.name}' 납입 기간이 아니에요`); return; }
+  const e = { id: newId(), type: "expense", date: dateInMonth(currentYear, currentMonth, s.day), description: s.name, amount: s.amount, category: SAVING_CAT, savingId: s.id, createdAt: Date.now() };
+  entries.unshift(e); saveEntries(); renderAll(); renderFixedModal();
+  showToast(`${label} '${s.name}' ${fmtWon(s.amount)} 넣었어요 · 금액은 가계부에서 고치면 여기도 바뀌어요`);
+}
+function showSavingForm() {
+  $("savForm").hidden = false; $("savAddToggle").hidden = true;
+  if (!$("savStart").value) $("savStart").value = monthPrefixOf(currentYear, currentMonth);
+  setTimeout(() => { $("savForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); $("savName").focus(); }, 30);
+}
 function savingProgress(s) {
   const paid = entries.filter(e => e.savingId === s.id);
   const saved = paid.reduce((t, e) => t + e.amount, 0), goal = s.amount * s.months;
@@ -2346,23 +2386,23 @@ function submitSaving() {
     msg = `'${s.name}' 추가했어요${linked ? ` · 이미 적어둔 납입 ${linked}건을 연결했어요` : ""}`;
   }
   saveSavings(); resetSavingForm(); renderFixedModal(); renderAll();
-  if (isOpen("savingListModal")) renderSavingListModal();
+  
   showToast(msg);
 }
 function editSaving(id) {
   const s = savings.find(x => x.id === id); if (!s) return;
   editingSavingId = id;
   $("savName").value = s.name; $("savAmount").value = s.amount; $("savDay").value = s.day; $("savStart").value = s.start; $("savMonths").value = s.months; $("savRate").value = s.rate || "";
-  $("savFormTitle").textContent = `'${s.name}' 고치기`; $("savSubmit").textContent = "수정 저장"; $("savCancelEdit").style.display = "inline-block";
+  $("savFormTitle").textContent = `'${s.name}' 고치기`; $("savSubmit").textContent = "수정 저장"; $("savForm").hidden = false; $("savAddToggle").hidden = true; setTimeout(() => $("savForm").scrollIntoView({ block: "nearest", behavior: "smooth" }), 30);
   updateSavingPreview();
-  if (isOpen("savingListModal")) closeModal("savingListModal");
   if (!isOpen("fixedModal")) openFixedModal();
   switchFixedTab("saving"); $("savName").focus();
 }
 function resetSavingForm() {
   editingSavingId = null;
+  $("savForm").hidden = true; $("savAddToggle").hidden = false;
   ["savName", "savAmount", "savDay", "savMonths", "savRate"].forEach(id => $(id).value = "");
-  $("savFormTitle").textContent = "새 적금"; $("savSubmit").textContent = "적금 추가"; $("savCancelEdit").style.display = "none";
+  $("savFormTitle").textContent = "새 적금"; $("savSubmit").textContent = "적금 추가";
   updateSavingPreview();
 }
 function toggleCloseSaving(id) {
@@ -2378,12 +2418,12 @@ function deleteSaving(id) {
   const linkedIds = entries.filter(e => e.savingId === id).map(e => e.id);
   entries.forEach(e => { if (e.savingId === id) delete e.savingId; });
   if (editingSavingId === id) resetSavingForm();
-  saveSavings(); saveEntries(); renderFixedModal(); if (isOpen("savingListModal")) renderSavingListModal(); renderAll();
+  saveSavings(); saveEntries(); renderFixedModal();  renderAll();
   offerUndo(`'${s.name}' 적금을 지웠어요 (장부 내역은 그대로)`, () => {
     savings.splice(idx, 0, s);
     entries.forEach(e => { if (linkedIds.includes(e.id)) e.savingId = id; });
     saveSavings(); saveEntries(); renderAll();
-    if (isOpen("fixedModal")) renderFixedModal(); if (isOpen("savingListModal")) renderSavingListModal();
+    if (isOpen("fixedModal")) renderFixedModal(); 
   });
 }
 function applySavingsToMonth() {
@@ -2396,7 +2436,7 @@ function applySavingsToMonth() {
     entries.unshift({ id: newId(), type: "expense", date: dateInMonth(currentYear, currentMonth, s.day), description: s.name, amount: s.amount, category: SAVING_CAT, savingId: s.id });
     added++;
   });
-  if (added) { saveEntries(); renderAll(); renderFixedModal(); if (isOpen("savingListModal")) renderSavingListModal(); }
+  if (added) { saveEntries(); renderAll(); renderFixedModal();  }
   showToast(added ? `${currentMonth + 1}월 적금 ${added}건을 기록했어요` : `${currentMonth + 1}월 납입은 이미 다 기록돼 있어요`);
 }
 function renderSavingMini() {
@@ -2414,7 +2454,7 @@ function renderSavingMini() {
     </div>`;
   }).join("");
 }
-function openSavingListModal() { renderSavingListModal(); openModal("savingListModal"); }
+function openSavingListModal() { fixedTab = "saving"; openFixedModal(); }
 function savingCardHTML(s, nowYM) {
   const p = savingProgress(s), done = p.saved >= p.goal, closed = s.status === "closed";
   const interest = savingInterest(s.amount, s.months, s.rate);
@@ -2424,13 +2464,27 @@ function savingCardHTML(s, nowYM) {
   }).join("");
   const left = Math.max(0, s.months - p.paid);
   const foot = closed ? `${s.closedAt ? s.closedAt.replace(/-/g, ".") + "에 " : ""}끝냈어요 · ${p.paid}회 납입`
-    : done ? `<span class="saving-done">다 모았어요! 만기 때 ${fmtWon(p.goal + interest)}</span>`
-    : `${p.paid}/${s.months}회 · ${left}회 남음 · ${monthLabel(savingEnd(s))} 만기${interest ? ` · 만기 예상 ${fmtWon(p.goal + interest)}` : ""}`;
+    : done ? `<span class="saving-done">다 모았어요! 만기 때 ${fmtWon(savingForecast(s).afterTax)}</span>`
+    : `${p.paid}/${s.months}회 · ${left}회 남음 · ${monthLabel(savingEnd(s))} 만기 · 만기 예상 ${fmtWon(savingForecast(s).afterTax)}`;
+  const viewYM = monthPrefixOf(currentYear, currentMonth), paidNow = p.paidMonths.has(viewYM), canPay = !closed && isActiveIn(s, viewYM);
+  const f = savingForecast(s), open = savingOpen.has(s.id);
+  const payBtn = closed ? "" : `<div class="sav-pay-wrap"><button class="sav-pay ${paidNow ? "paid" : ""}" onclick="event.stopPropagation(); paySaving('${s.id}')" aria-label="${currentMonth + 1}월 납입 ${paidNow ? "취소" : "기록"}" title="${paidNow ? "눌러서 납입 취소" : `${currentMonth + 1}월 납입 기록`}" ${!paidNow && !canPay ? "disabled style=\"opacity:.35;cursor:default\"" : ""}>${paidNow ? "✓" : "+"}</button><small>${paidNow ? `${currentMonth + 1}월 넣음` : canPay ? `${currentMonth + 1}월 넣기` : "기간 밖"}</small></div>`;
+  const forecast = open ? `<div class="sav-forecast">
+      <span>지금까지 넣은 돈</span><span>${fmtWon(f.paidPrincipal)}</span>
+      <span>앞으로 넣을 돈 (${f.futureN}회 × ${fmtWon(s.amount)})</span><span>${fmtWon(f.futurePrincipal)}</span>
+      <span>이자 ${s.rate ? `(연 ${s.rate}%, 세전)` : "(이율 없음)"}</span><span>${fmtWon(f.interest)}</span>
+      ${f.interest ? `<span>이자 세금 15.4%</span><span>-${fmtWon(f.tax)}</span>` : ""}
+      <i class="line"></i>
+      <span>${monthLabel(savingEnd(s))} 만기 때 받을 돈</span><span class="big">${fmtWon(f.afterTax)}</span>
+      <span class="note">넣은 돈은 가계부에 적힌 금액 그대로 계산해요. 가계부에서 납입 금액을 고치면 여기도 바로 바뀌어요.</span>
+    </div>` : "";
   return `<div class="saving-card ${closed ? "closed" : ""}">
-    <div class="saving-card-head">${catIcon(s.name, 40)}
-      <div class="saving-card-title"><div class="saving-card-name">${escapeHtml(s.name)}</div><div class="saving-card-meta">매월 ${s.day}일 ${fmtWon(s.amount)}${s.rate ? ` · 연 ${s.rate}%` : ""}</div></div>
+    <div class="saving-card-head" onclick="toggleSavingOpen('${s.id}')" title="눌러서 만기 계산 보기">${catIcon(s.name, 40)}
+      <div class="saving-card-title"><div class="saving-card-name">${escapeHtml(s.name)}</div><div class="saving-card-meta">매월 ${s.day}일 ${fmtWon(s.amount)}${s.rate ? ` · 연 ${s.rate}%` : ""} · ${open ? "접기 ▲" : "만기 계산 ▼"}</div></div>
       <div class="saving-card-amt"><b>${fmtWon(p.saved)}</b><span>/ ${fmtWon(p.goal)}</span></div>
+      ${payBtn}
     </div>
+    ${forecast}
     <div class="progress" role="progressbar" aria-valuenow="${p.pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${escapeAttr(s.name)} ${p.pct}%"><div style="width:${p.pct}%"></div></div>
     <div class="month-dots">${dots}</div>
     <div class="saving-card-foot"><span>${foot}</span>
@@ -2446,13 +2500,14 @@ function renderSavingListModal() {
   const ym = monthPrefixOf(currentYear, currentMonth), nowYM = monthPrefixOf(new Date().getFullYear(), new Date().getMonth());
   const active = savings.filter(s => s.status !== "closed"), closed = savings.filter(s => s.status === "closed");
   let totalSaved = 0, totalMaturity = 0, monthDue = 0;
-  active.forEach(s => { totalSaved += savingProgress(s).saved; totalMaturity += s.amount * s.months + savingInterest(s.amount, s.months, s.rate); if (isActiveIn(s, ym)) monthDue += s.amount; });
+  active.forEach(s => { totalSaved += savingProgress(s).saved; totalMaturity += savingForecast(s).afterTax; if (isActiveIn(s, ym)) monthDue += s.amount; });
   $("savingStats").innerHTML = `
     <div class="tile"><div class="tile-label">지금까지 모은 돈</div><div class="tile-value">${fmtWon(totalSaved)}</div></div>
-    <div class="tile"><div class="tile-label">만기 때 받을 돈</div><div class="tile-value">${fmtWon(totalMaturity)}</div><div class="tile-sub">이자는 세전</div></div>
+    <div class="tile"><div class="tile-label">만기 때 받을 돈</div><div class="tile-value">${fmtWon(totalMaturity)}</div><div class="tile-sub">이자 세금 뺀 금액</div></div>
     <div class="tile"><div class="tile-label">${currentMonth + 1}월 넣을 돈</div><div class="tile-value">${fmtWon(monthDue)}</div></div>`;
   const wrap = $("savingCards");
-  if (!savings.length) { wrap.innerHTML = `<div class="empty" style="min-height:180px;">${mascotSVG("sleepy", 72)}<div>아직 적금이 없어요.<br>고정 지출 &amp; 적금 창에서 추가해보세요.</div></div>`; return; }
+  if (!savings.length) { wrap.innerHTML = `<div class="empty" style="min-height:150px;">${mascotSVG("sleepy", 64)}<div>아직 적금이 없어요.<br>아래 <b>+ 새 적금 추가하기</b>로 등록해보세요.</div></div>`; $("savingStats").style.display = "none"; return; }
+  $("savingStats").style.display = "";
   wrap.innerHTML = active.map(s => savingCardHTML(s, nowYM)).join("") +
     (closed.length ? `<div class="sub-title" style="margin-top:6px">끝난 적금</div>` + closed.map(s => savingCardHTML(s, nowYM)).join("") : "");
 }
@@ -3823,7 +3878,7 @@ function applyState(st) {
   renderCurrent();
   if (isOpen("settingsModal")) renderSettings();
   if (isOpen("fixedModal")) renderFixedModal();
-  if (isOpen("savingListModal")) renderSavingListModal();
+  
   if (isOpen("recvModal")) renderRecvModal();
   if (isOpen("pointModal")) renderPointModal();
 }
