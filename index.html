@@ -344,6 +344,7 @@
 
   [hidden] { display: none !important; }
   .nick-row { display: flex; gap: 8px; }
+  .recat-btn { width: 100%; margin-top: 8px; padding: 10px; font-size: 13px; }
   .nick-row .modal-input { flex: 1; min-width: 0; }
   .nick-save { flex: 0 0 auto; padding: 10px 18px; }
   /* ============ 처음 화면: 로그인 / 회원가입 ============ */
@@ -1055,8 +1056,9 @@
     </div>
     <div class="set-section">
       <div class="sub-title">학습한 분류</div>
-      <p class="modal-desc">내역을 고칠 때 배운 규칙이에요. 지우면 원래 규칙대로 분류해요.</p>
+      <p class="modal-desc">내역을 고칠 때 배운 규칙이에요. 카테고리를 고치면 지난 내역 중 같은 이름도 같이 바뀌어요. 지우면 원래 규칙대로 분류해요.</p>
       <div class="manage-list" id="learnedList"></div>
+      <button class="modal-btn btn-cancel recat-btn" onclick="recategorizeFromSettings()">지난 내역 다시 분류하기</button>
     </div>
     <button class="modal-btn btn-save" onclick="closeModal('settingsModal')">닫기</button>
   </div>
@@ -1446,7 +1448,7 @@ function loadData() {
   budgets = Object.assign({ total: 0, cats: {} }, readJSON(KEYS.budgets, {}));
   learned = readJSON(KEYS.learned, {});
   settings = Object.assign({ spice: "normal", lastBackupAt: 0 }, readJSON(KEYS.settings, {}));
-  migrate();
+  migrate(); autoRecategorize();
   refreshCatList(); updateSpiceUI(); updateBackupDot();
   if (currentAppMode === 'ledger') renderAll(); else renderWishlist();
 }
@@ -1906,13 +1908,63 @@ function saveEditEntry() {
   if (nCat) entry.category = nCat;
   if (entry.category !== SAVING_CAT) delete entry.savingId; else linkToSaving(entry);
 
-  let learnedMsg = "";
+  let sameN = 0;
   if (before.category !== entry.category || before.type !== entry.type) {
-    const key = norm(entry.description.replace(/\s*\((할부 \d+\/\d+|\d+명 n빵)\)/g, ""));
-    if (key) { learned[key] = { category: entry.category, type: entry.type }; saveLearned(); learnedMsg = `다음부터 '${entry.description}'${pp(entry.description, '은', '는')} ${entry.category}${pp(entry.category, '으로')} 분류할게요`; }
+    const key = entryKey(entry.description);
+    if (key) {
+      learned[key] = { category: entry.category, type: entry.type }; saveLearned();
+      // 지난 내역 중 같은 이름도 조용히 같이 바꿔요 (알림 없이)
+      sameN = applyRuleToPast(key, entry.category, entry.type, entry.id);
+    }
   }
   saveEntries(); refreshCatList(); renderAll(); closeModal("editModal");
-  if (learnedMsg) showToast(learnedMsg);
+  if (sameN) showToast(`같은 이름 ${sameN}건도 ${entry.category}${pp(entry.category, '으로')} 바꿨어요`);
+}
+// 할부·n빵 꼬리표를 뗀 이름 → 학습 규칙 열쇠
+function entryKey(desc) { return norm(String(desc || "").replace(/\s*\((할부 \d+\/\d+|\d+명 n빵|취소)\)/g, "")); }
+function applyRuleToPast(key, category, type, skipId) {
+  let n = 0;
+  entries.forEach(e => {
+    if (e.id === skipId || entryKey(e.description) !== key) return;
+    if (e.category === category && e.type === type) return;
+    if (e.savingId || e.category === SAVING_CAT) return; // 적금에 연결된 건 그대로
+    e.category = category; e.type = type; n++;
+  });
+  return n;
+}
+// 지난 내역 다시 분류: 배운 규칙은 전부, 새 규칙은 '기타'로 남아 있던 것만
+function recategorizePast(dry) {
+  const changes = [];
+  entries.forEach(e => {
+    if (e.savingId || e.category === SAVING_CAT) return;
+    const hit = learned[entryKey(e.description)];
+    let next = null;
+    if (hit) next = { category: hit.category, type: hit.type || e.type };
+    else if (e.category === "기타" || e.category === "기타수입") {
+      const c = categorize(e.description, e.type);
+      if (c.category !== e.category) next = c;
+    }
+    if (next && (next.category !== e.category || next.type !== e.type)) changes.push([e, next]);
+  });
+  if (!dry) changes.forEach(([e, n]) => { e.category = n.category; e.type = n.type; });
+  return changes;
+}
+const RULES_VER = 2;
+function autoRecategorize() {
+  if ((settings.rulesVer || 0) >= RULES_VER) return;
+  const ch = recategorizePast(false);
+  settings.rulesVer = RULES_VER; saveSettings();
+  if (ch.length) { saveEntries(); refreshCatList(); }
+}
+function recategorizeFromSettings() {
+  const ch = recategorizePast(true);
+  if (!ch.length) { showToast("다시 분류할 내역이 없어요. 이미 다 맞게 들어가 있어요"); return; }
+  const prev = ch.map(([e]) => [e.id, e.category, e.type]);
+  recategorizePast(false); saveEntries(); refreshCatList(); renderAll(); renderSettings();
+  offerUndo(`지난 내역 ${ch.length}건을 다시 분류했어요`, () => {
+    prev.forEach(([id, c, t]) => { const e = entries.find(x => x.id === id); if (e) { e.category = c; e.type = t; } });
+    saveEntries(); refreshCatList(); renderAll(); if (isOpen("settingsModal")) renderSettings();
+  });
 }
 
 // =====================================================================
