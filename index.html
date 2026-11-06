@@ -261,6 +261,8 @@
   }
   .entry:hover { border-color: var(--hover-line); }
   .entry.just-added { background: var(--point-soft); }
+  .entry.excluded .entry-amount { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .ex-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 99px; background: var(--cream); color: var(--muted); font-size: 10px; vertical-align: 1px; }
   .cat-icon { flex: 0 0 auto; display: block; }
   .entry-main { flex: 1; min-width: 0; }
   .entry-desc { font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1021,6 +1023,7 @@
       <label class="field full-col"><span>내용</span><input type="text" id="editDesc" class="modal-input" /></label>
       <label class="field"><span>금액</span><input type="number" id="editAmount" class="modal-input" /></label>
       <label class="field"><span>카테고리</span><input type="text" id="editCategory" class="modal-input" list="catList" /></label>
+      <label class="fx-check full-col"><input type="checkbox" id="editIncluded" /> 합계에 포함</label>
       <label class="field full-col" id="editTripField"><span>여행</span><select id="editTrip" class="modal-input"></select></label>
     </div>
     <div class="modal-btns">
@@ -1128,6 +1131,7 @@
       <button class="cal-nav" onclick="moveReport(1)" aria-label="다음 달"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
     </div>
     <div class="tile-row four" id="reportStats"></div>
+    <div id="reportFx"></div>
     <div class="sub-title">카테고리별 쓴 돈</div>
     <div class="hbars" id="reportCats"></div>
     <div class="sub-title">최근 6개월 쓴 돈</div>
@@ -1401,7 +1405,7 @@
       <label class="field"><span id="fxForeignLabel">받은 돈</span><input id="fxForeign" type="number" step="any" min="0" class="modal-input" oninput="updateFxRate()" /></label>
     </div>
     <p class="modal-desc" id="fxRateText"></p>
-    <label class="fx-check"><input type="checkbox" id="fxInLedger" /> 가계부 지출 합계에 넣기</label>
+    <label class="fx-check"><input type="checkbox" id="fxInLedger" /> 지출 합계에 포함</label>
     <div class="modal-btns">
       <button class="modal-btn btn-cancel" onclick="closeModal('fxModal')">취소</button>
       <button class="modal-btn btn-save" onclick="saveFx()">저장</button>
@@ -1564,8 +1568,8 @@ function shortWon(n) {
 function escapeHtml(str) { const div = document.createElement("div"); div.textContent = String(str ?? ""); return div.innerHTML; }
 function escapeAttr(str) { return escapeHtml(str).replace(/"/g, "&quot;"); }
 function norm(s) { return String(s || "").toLowerCase().replace(/\s+/g, ""); }
-function isSpend(e) { return e.type === "expense" && !SAVE_CATS.has(e.category); }
-function sumBy(list, pred) { return list.reduce((s, e) => s + (pred(e) ? e.amount : 0), 0); }
+function isSpend(e) { return e.type === "expense" && !e.excluded && !SAVE_CATS.has(e.category); }
+function sumBy(list, pred) { return list.reduce((s, e) => s + (!e.excluded && pred(e) ? e.amount : 0), 0); } // 합계 제외한 건 안 셈
 function inMonth(e, y, m) { return e.date.startsWith(monthPrefixOf(y, m)); }
 function dateInMonth(y, m, day) { // 월이 넘쳐도 되고, 31일 없는 달은 말일로
   const first = new Date(y, m, 1), yy = first.getFullYear(), mm = first.getMonth();
@@ -1693,6 +1697,7 @@ function loadData() {
 // 예전 데이터 형식 맞추기
 function migrate() {
   let changed = false;
+  if (typeof migrateFx === "function" && migrateFx()) { safeSet(KEYS.trips, JSON.stringify(trips)); changed = true; }
   fixedExpenses.forEach(f => { if (!f.id) { f.id = newId(); changed = true; } if (!f.type) { f.type = "expense"; changed = true; } });
   savings.forEach(s => { if (!s.status) { s.status = "active"; changed = true; } });
   wishItems.forEach(w => { if (typeof w.saved !== "number") { w.saved = 0; changed = true; } });
@@ -2048,10 +2053,13 @@ function handleDelete(id) {
   const recvIdx = entry.splitId ? receivables.findIndex(r => r.id === entry.splitId && r.entryId === entry.id) : -1;
   const recv = recvIdx > -1 ? receivables.splice(recvIdx, 1)[0] : null;
   entries.splice(idx, 1);
+  let fxT = null, fxI = -1, fxX = null;
+  if (entry.fxRecId) { fxT = trips.find(t => (t.fx || []).some(v => v.id === entry.fxRecId)); if (fxT) { fxI = fxT.fx.findIndex(v => v.id === entry.fxRecId); fxX = fxT.fx.splice(fxI, 1)[0]; recalcTrip(fxT); saveTrips(); } }
   saveEntries(); if (recv) saveRecv(); renderAll();
   const others = entry.installment ? entries.filter(e => e.installment && e.installment.gid === entry.installment.gid).length : 0;
   offerUndo(`'${entry.description}' 지웠어요${others ? ` · 다른 달 할부 ${others}건은 그대로예요` : ""}`, () => {
     entries.splice(Math.min(idx, entries.length), 0, entry);
+    if (fxX) { fxT.fx.splice(fxI, 0, fxX); recalcTrip(fxT); saveTrips(); }
     if (recv) { receivables.splice(Math.min(recvIdx, receivables.length), 0, recv); saveRecv(); }
     saveEntries(); renderAll();
   });
@@ -2135,6 +2143,7 @@ function openEditModal(id) {
   currentEditId = id;
   $("editType").value = entry.type; $("editDate").value = entry.date; $("editDesc").value = entry.description;
   $("editAmount").value = entry.amount; $("editCategory").value = entry.category;
+  $("editIncluded").checked = !entry.excluded;
   $("editTripField").style.display = trips.length ? "" : "none";
   $("editTrip").innerHTML = `<option value="">여행 아님</option>` + trips.map(t => `<option value="${escapeAttr(t.id)}" ${entry.tripId === t.id ? "selected" : ""}>✈ ${escapeHtml(t.name)}</option>`).join("");
   openModal("editModal");
@@ -2152,6 +2161,8 @@ function saveEditEntry() {
   if (nCat) entry.category = nCat;
   if (entry.category !== SAVING_CAT) delete entry.savingId; else linkToSaving(entry);
   if (trips.length) { const tv = $("editTrip").value; if (tv) entry.tripId = tv; else { delete entry.tripId; } }
+  if ($("editIncluded").checked) delete entry.excluded; else entry.excluded = true;
+  if (entry.fxRecId) { const t = trips.find(x => (x.fx || []).some(v => v.id === entry.fxRecId)); const x = t && t.fx.find(v => v.id === entry.fxRecId); if (x) { x.krw = entry.amount; x.date = entry.date; recalcTrip(t); saveTrips(); } }
 
   let sameN = 0;
   if (before.category !== entry.category || before.type !== entry.type) {
@@ -2761,9 +2772,25 @@ function renderPlanCard() {
     <div class="plan-mini">${rows.map(c => { const over = c.used > c.limit; return `<div title="${escapeAttr(`${c.cat} ${fmtWon(c.used)} / ${fmtWon(c.limit)}`)}"><b>${escapeHtml(c.cat)}</b><span class="${over ? "over" : ""}">${shortWon(c.used)} / ${shortWon(c.limit)}</span><div class="progress ${over ? "over" : ""}"><div style="width:${Math.min(100, c.r * 100)}%"></div></div></div>`; }).join("")}</div>
     `;
 }
+// 가진 외화: 환전한 외화 − 그 외화로 쓴 돈 (합계 포함 여부와 상관없이)
+function foreignHoldings() {
+  const by = {};
+  trips.forEach(t => {
+    if (!t.cur || t.cur === "KRW") return;
+    const h = by[t.cur] = by[t.cur] || { cur: t.cur, got: 0, used: 0, krw: 0 };
+    (t.fx || []).forEach(x => { h.got += +x.foreign || 0; h.krw += +x.krw || 0; });
+  });
+  entries.forEach(e => { if (e.fx && by[e.fx.cur]) by[e.fx.cur].used += e.type === "expense" ? e.fx.amt : -e.fx.amt; });
+  return Object.values(by).filter(h => h.got > 0).map(h => ({ ...h, left: Math.round((h.got - h.used) * 100) / 100, rate: h.krw / h.got }));
+}
+function renderReportFx() {
+  const hs = foreignHoldings(), el = $("reportFx");
+  el.innerHTML = hs.length ? `<div class="sub-title">가진 외화</div><div class="tile-row">${hs.map(h => `<div class="tile"><div class="tile-label">${escapeHtml(CURRENCIES[h.cur].name)}</div><div class="tile-value">${fmtFx(h.left, h.cur)}</div><div class="tile-sub">≈ ${fmtWon(Math.max(0, h.left) * h.rate)} · ${fmtFx(h.got, h.cur)} 환전</div></div>`).join("")}</div>` : "";
+}
 function openReport() { reportYM = { y: currentYear, m: currentMonth }; renderReport(); openModal("reportModal"); }
 function moveReport(dir) { const d = new Date(reportYM.y, reportYM.m + dir, 1); reportYM = { y: d.getFullYear(), m: d.getMonth() }; renderReport(); }
 function renderReport() {
+  renderReportFx();
   const { y, m } = reportYM;
   $("reportTitle").textContent = `${y}년 ${m + 1}월 리포트`;
   const list = entries.filter(e => inMonth(e, y, m));
@@ -3087,7 +3114,7 @@ function renderCalendar() {
   let html = '';
   for (let i = 0; i < firstDay; i++) html += `<div class="cal-day other-month"></div>`;
   for (let d = 1; d <= daysInMonth; d++) {
-    const ds = `${prefix}-${String(d).padStart(2, '0')}`, dayEntries = entries.filter(e => e.date === ds);
+    const ds = `${prefix}-${String(d).padStart(2, '0')}`, dayEntries = entries.filter(e => e.date === ds && !e.excluded);
     let mark = '', tip = '';
     if (dayEntries.some(e => e.type === "expense")) { mark = `<span class="cal-dot"></span>`; tip = `지출 ${fmtWon(sumBy(dayEntries, e => e.type === "expense"))}`; }
     else if (dayEntries.length) { mark = `<span class="cal-dot income-dot"></span>`; tip = `수입 ${fmtWon(sumBy(dayEntries, e => e.type === "income"))}`; }
@@ -3148,9 +3175,9 @@ function weekdayKo(dateStr, withYear = false) {
 function signedWon(e) { return (e.type === "income" ? "+" : "-") + fmtWon(e.amount); }
 function entryRow(e, subText, inTrip) {
   const t = !inTrip && e.tripId ? trips.find(x => x.id === e.tripId) : null;
-  const sub = subText + (e.fx ? ` · ${fmtFx(e.fx.amt, e.fx.cur)}` : "");
-  return `<div class="entry ${justAddedIds.includes(e.id) ? "just-added" : ""}">${catIcon(e.category)}
-    <div class="entry-main"><div class="entry-desc">${escapeHtml(e.description)}${t ? `<span class="trip-tag">✈ ${escapeHtml(t.name)}</span>` : ""}</div><div class="entry-cat">${escapeHtml(sub)}</div></div>
+  const sub = e.fxGot ? `${fmtFx(e.fxGot.amt, e.fxGot.cur)} 받음` : subText + (e.fx ? ` · ${fmtFx(e.fx.amt, e.fx.cur)}` : "");
+  return `<div class="entry ${justAddedIds.includes(e.id) ? "just-added" : ""} ${e.excluded ? "excluded" : ""}">${catIcon(e.category)}
+    <div class="entry-main"><div class="entry-desc">${escapeHtml(e.description)}${t ? `<span class="trip-tag">✈ ${escapeHtml(t.name)}</span>` : ""}</div><div class="entry-cat">${escapeHtml(sub)}${e.excluded ? `<span class="ex-tag">합계 제외</span>` : ""}</div></div>
     <div class="entry-amount ${e.type === "income" ? "income" : ""}">${signedWon(e)}</div>
     <div class="entry-actions">
       <button class="action-btn edit-btn" data-id="${e.id}" aria-label="수정">${ICON_EDIT}</button>
@@ -4201,7 +4228,7 @@ function renderTrips() {
       + [...fxs].sort((a, b) => b.date.localeCompare(a.date)).map(x => `<div class="fx-row"><span class="fx-date">${x.date.slice(5).replace("-", "/")}</span>
         <div class="fx-main">${fmtWon(x.krw)} → ${fmtFx(x.foreign, t.cur)}<small>${x.memo ? escapeHtml(x.memo) + " · " : ""}${cur.per}${escapeHtml(cur.unit)} = ${(x.krw / x.foreign * cur.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</small></div>
         <span></span>
-        <button class="fx-toggle ${x.entryId ? "on" : ""}" data-id="${escapeAttr(x.id)}" onclick="toggleFxLedger(this.dataset.id)" aria-pressed="${x.entryId ? "true" : "false"}" title="가계부 지출 합계에 넣기"><i></i>${x.entryId ? "지출에 넣음" : "지출에 안 넣음"}</button>
+        ${(() => { const on = !!(x.entryId && entries.some(v => v.id === x.entryId && !v.excluded)); return `<button class="fx-toggle ${on ? "on" : ""}" data-id="${escapeAttr(x.id)}" onclick="toggleFxLedger(this.dataset.id)" aria-pressed="${on}" title="지출 합계에 포함"><i></i>${on ? "합계 포함" : "합계 제외"}</button>`; })()}
         <button class="action-btn" data-id="${escapeAttr(x.id)}" onclick="deleteFx(this.dataset.id)" aria-label="환전 기록 지우기">${ICON_DEL}</button></div>`).join("")
       + `<button class="btn-secondary fx-add" onclick="openFxModal()"><span>+ 환전 기록하기</span></button>`;
     return;
@@ -4212,7 +4239,7 @@ function renderTrips() {
   }
   // 카테고리 막대
   const byCat = {};
-  list.filter(e => e.type === "expense").forEach(e => byCat[e.category] = (byCat[e.category] || 0) + e.amount);
+  list.filter(e => e.type === "expense" && !e.excluded).forEach(e => byCat[e.category] = (byCat[e.category] || 0) + e.amount);
   const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]), max = cats.length ? cats[0][1] : 1;
   const catHTML = cats.length ? `<div class="trip-cats">${cats.slice(0, 5).map(([c, v]) => `<div class="hbar-row">${catIcon(c, 22)}<span class="hbar-name">${escapeHtml(c)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.max(4, v / max * 100)}%"></div></div><span class="hbar-val">${fmtWon(v)}</span></div>`).join("")}</div>` : "";
   // 날짜별
@@ -4277,28 +4304,35 @@ function deleteTrip() {
 }
 // 환전을 가계부 지출로 넣기/빼기 (켜면 '환전' 카테고리 지출 1건이 생겨요)
 function fxEntryDesc(x, t) { return `환전 ${fmtWon(x.krw)} → ${fmtFx(x.foreign, t.cur)}`; }
-function setFxLedger(t, x, on) {
-  const had = x.entryId && entries.find(e => e.id === x.entryId);
-  if (on && !had) {
-    const e = { id: newId(), type: "expense", date: x.date, description: fxEntryDesc(x, t), amount: x.krw, category: "환전", tripId: t.id, fxRecId: x.id, createdAt: Date.now() };
+function ensureFxEntry(t, x, include) {
+  let e = x.entryId && entries.find(v => v.id === x.entryId);
+  const unit = (CURRENCIES[t.cur] || { unit: t.cur }).unit;
+  if (!e) {
+    e = { id: newId(), type: "expense", date: x.date, description: `${unit} 환전`, amount: x.krw, category: "환전", tripId: t.id, fxRecId: x.id, createdAt: Date.now() };
+    if (!include) e.excluded = true;
     entries.unshift(e); x.entryId = e.id;
-  } else if (!on) {
-    if (had) entries = entries.filter(e => e.id !== x.entryId);
-    delete x.entryId;
   }
+  e.description = `${unit} 환전`; e.fxGot = { cur: t.cur, amt: x.foreign }; e.amount = x.krw; e.tripId = t.id; e.fxRecId = x.id;
+  return e;
+}
+function migrateFx() {
+  let n = 0;
+  trips.forEach(t => (t.fx || []).forEach(x => { const had = x.entryId && entries.some(v => v.id === x.entryId); if (!had || !entries.find(v => v.id === x.entryId).fxGot) { ensureFxEntry(t, x, had); n++; } }));
+  return n;
 }
 function toggleFxLedger(id) {
   const t = currentTrip(); if (!t) return;
   const x = (t.fx || []).find(v => v.id === id); if (!x) return;
-  const on = !x.entryId;
-  setFxLedger(t, x, on); saveTrips(); saveEntries(); refreshCatList(); renderTrips();
-  showToast(on ? `${fmtWon(x.krw)} 환전을 지출에 넣었어요` : "환전을 지출에서 뺐어요");
+  const e = ensureFxEntry(t, x, false), on = !!e.excluded;
+  if (on) delete e.excluded; else e.excluded = true;
+  saveTrips(); saveEntries(); refreshCatList(); renderTrips();
+  showToast(on ? `${fmtWon(x.krw)} 환전을 합계에 넣었어요` : "환전을 합계에서 뺐어요");
 }
 function addFx(t, data, inLedger) {
   t.fx = t.fx || [];
   const x = Object.assign({ id: newId() }, data);
   t.fx.push(x);
-  if (inLedger) setFxLedger(t, x, true);
+  ensureFxEntry(t, x, !!inLedger);
   recalcTrip(t); saveTrips(); saveEntries();
   return x;
 }
