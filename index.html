@@ -320,6 +320,15 @@
   .fx-row .fx-main small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 700; }
   .fx-row .fx-amt { font-family: var(--display); font-size: 15px; text-align: right; white-space: nowrap; }
   .fx-add { width: 100%; margin-top: 4px; }
+  .fx-row { grid-template-columns: auto 1fr auto auto auto; }
+  .fx-check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 4px 2px; }
+  .fx-check input { width: 18px; height: 18px; accent-color: var(--ink); }
+  .fx-toggle { display: flex; flex-direction: column; align-items: center; gap: 3px; border: none; background: none; cursor: pointer; padding: 0 2px; font: 400 10px var(--body); color: var(--muted); white-space: nowrap; }
+  .fx-toggle i { width: 34px; height: 20px; border-radius: 99px; background: var(--line); position: relative; transition: background .2s; }
+  .fx-toggle i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--paper); box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: left .2s; }
+  .fx-toggle.on i { background: var(--ink); }
+  .fx-toggle.on i::after { left: 16px; }
+  .fx-toggle.on { color: var(--ink); }
   .fx-total { display: flex; justify-content: space-between; gap: 10px; background: var(--cream); border-radius: var(--r-lg); padding: 12px 14px; margin-bottom: 12px; font-size: 13px; font-weight: 800; flex-wrap: wrap; }
   .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
   .wish-card { border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--paper); display: flex; flex-direction: column; overflow: hidden; }
@@ -1392,6 +1401,7 @@
       <label class="field"><span id="fxForeignLabel">받은 돈</span><input id="fxForeign" type="number" step="any" min="0" class="modal-input" oninput="updateFxRate()" /></label>
     </div>
     <p class="modal-desc" id="fxRateText"></p>
+    <label class="fx-check"><input type="checkbox" id="fxInLedger" /> 가계부 지출 합계에 넣기</label>
     <div class="modal-btns">
       <button class="modal-btn btn-cancel" onclick="closeModal('fxModal')">취소</button>
       <button class="modal-btn btn-save" onclick="saveFx()">저장</button>
@@ -4189,8 +4199,9 @@ function renderTrips() {
   if (tripTab === "fx" && t.cur !== "KRW") {
     $("tripBody").innerHTML = `<div class="fx-total"><span>환전 ${fxs.length}번 · ${fmtWon(fxKrw)} → ${fmtFx(fxForeign, t.cur)}</span><span>평균 ${cur.per}${escapeHtml(cur.unit)} = ${(rate * cur.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</span></div>`
       + [...fxs].sort((a, b) => b.date.localeCompare(a.date)).map(x => `<div class="fx-row"><span class="fx-date">${x.date.slice(5).replace("-", "/")}</span>
-        <div class="fx-main">${escapeHtml(x.memo || "환전")}<small>${cur.per}${escapeHtml(cur.unit)} = ${(x.krw / x.foreign * cur.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</small></div>
-        <div class="fx-amt">${fmtWon(x.krw)}<br><span class="income">→ ${fmtFx(x.foreign, t.cur)}</span></div>
+        <div class="fx-main">${fmtWon(x.krw)} → ${fmtFx(x.foreign, t.cur)}<small>${x.memo ? escapeHtml(x.memo) + " · " : ""}${cur.per}${escapeHtml(cur.unit)} = ${(x.krw / x.foreign * cur.per).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</small></div>
+        <span></span>
+        <button class="fx-toggle ${x.entryId ? "on" : ""}" data-id="${escapeAttr(x.id)}" onclick="toggleFxLedger(this.dataset.id)" aria-pressed="${x.entryId ? "true" : "false"}" title="가계부 지출 합계에 넣기"><i></i>${x.entryId ? "지출에 넣음" : "지출에 안 넣음"}</button>
         <button class="action-btn" data-id="${escapeAttr(x.id)}" onclick="deleteFx(this.dataset.id)" aria-label="환전 기록 지우기">${ICON_DEL}</button></div>`).join("")
       + `<button class="btn-secondary fx-add" onclick="openFxModal()"><span>+ 환전 기록하기</span></button>`;
     return;
@@ -4264,12 +4275,39 @@ function deleteTrip() {
     });
   });
 }
+// 환전을 가계부 지출로 넣기/빼기 (켜면 '환전' 카테고리 지출 1건이 생겨요)
+function fxEntryDesc(x, t) { return `환전 ${fmtWon(x.krw)} → ${fmtFx(x.foreign, t.cur)}`; }
+function setFxLedger(t, x, on) {
+  const had = x.entryId && entries.find(e => e.id === x.entryId);
+  if (on && !had) {
+    const e = { id: newId(), type: "expense", date: x.date, description: fxEntryDesc(x, t), amount: x.krw, category: "환전", tripId: t.id, fxRecId: x.id, createdAt: Date.now() };
+    entries.unshift(e); x.entryId = e.id;
+  } else if (!on) {
+    if (had) entries = entries.filter(e => e.id !== x.entryId);
+    delete x.entryId;
+  }
+}
+function toggleFxLedger(id) {
+  const t = currentTrip(); if (!t) return;
+  const x = (t.fx || []).find(v => v.id === id); if (!x) return;
+  const on = !x.entryId;
+  setFxLedger(t, x, on); saveTrips(); saveEntries(); refreshCatList(); renderTrips();
+  showToast(on ? `${fmtWon(x.krw)} 환전을 지출에 넣었어요` : "환전을 지출에서 뺐어요");
+}
+function addFx(t, data, inLedger) {
+  t.fx = t.fx || [];
+  const x = Object.assign({ id: newId() }, data);
+  t.fx.push(x);
+  if (inLedger) setFxLedger(t, x, true);
+  recalcTrip(t); saveTrips(); saveEntries();
+  return x;
+}
 // 환전
 function openFxModal() {
   const t = currentTrip(); if (!t) return;
   const c = CURRENCIES[t.cur], today = getTodayStr();
   $("fxDate").value = today <= t.end ? today : t.start; $("fxMemo").value = ""; $("fxKrw").value = ""; $("fxForeign").value = "";
-  $("fxForeignLabel").textContent = `받은 돈 (${c.unit})`; updateFxRate();
+  $("fxForeignLabel").textContent = `받은 돈 (${c.unit})`; $("fxInLedger").checked = false; updateFxRate();
   openModal("fxModal"); setTimeout(() => $("fxKrw").focus(), 60);
 }
 function updateFxRate() {
@@ -4281,17 +4319,17 @@ function saveFx() {
   const t = currentTrip(); if (!t) return;
   const k = Math.round(parseFloat($("fxKrw").value)), f = parseFloat($("fxForeign").value);
   if (!(k > 0) || !(f > 0)) { showToast("낸 돈과 받은 돈을 둘 다 적어주세요"); return; }
-  t.fx = t.fx || [];
-  t.fx.push({ id: newId(), date: $("fxDate").value || getTodayStr(), krw: k, foreign: Math.round(f * 100) / 100, memo: $("fxMemo").value.trim() });
-  const n = recalcTrip(t);
-  saveTrips(); closeModal("fxModal"); renderTrips();
+  addFx(t, { date: $("fxDate").value || getTodayStr(), krw: k, foreign: Math.round(f * 100) / 100, memo: $("fxMemo").value.trim() }, $("fxInLedger").checked);
+  closeModal("fxModal"); renderTrips();
   showToast(`환전 기록했어요`);
 }
 function deleteFx(id) {
   const t = currentTrip(); if (!t) return;
   const i = (t.fx || []).findIndex(x => x.id === id); if (i < 0) return;
-  const x = t.fx.splice(i, 1)[0]; recalcTrip(t); saveTrips(); renderTrips();
-  offerUndo("환전 기록을 지웠어요", () => { t.fx.splice(i, 0, x); recalcTrip(t); saveTrips(); renderTrips(); });
+  const x = t.fx.splice(i, 1)[0], linked = x.entryId ? entries.find(e => e.id === x.entryId) : null;
+  if (linked) entries = entries.filter(e => e !== linked);
+  recalcTrip(t); saveTrips(); saveEntries(); renderTrips();
+  offerUndo("환전 기록을 지웠어요", () => { t.fx.splice(i, 0, x); if (linked) entries.unshift(linked); recalcTrip(t); saveTrips(); saveEntries(); renderTrips(); });
 }
 // 여행 지출 입력: "라멘 1200엔", "$12.5 택시", "면세점 5만원", 숫자만 쓰면 여행 통화
 function tripParse(seg, t) {
@@ -4323,9 +4361,32 @@ function tripParse(seg, t) {
   } else tripCtx.date = r.date;
   return r;
 }
+function parseFxText(seg, t) {
+  const num = (v, mul) => parseFloat(String(v).replace(/,/g, "")) * (mul === "만" ? 10000 : mul === "천" ? 1000 : 1);
+  const wm = seg.match(/(\d[\d,]*(?:\.\d+)?)\s*(만|천)?\s*원/);
+  const c = CURRENCIES[t.cur];
+  const fm = c && c.words ? seg.match(new RegExp("(\\d[\\d,]*(?:\\.\\d+)?)\\s*(만|천)?\\s*(?:" + c.words + ")(?![가-힣a-z])", "i")) : null;
+  let krw = wm ? Math.round(num(wm[1], wm[2])) : 0, foreign = fm ? num(fm[1], fm[2]) : 0;
+  if (!krw && !foreign) return null;
+  const rate = tripRate(t);
+  if (!foreign) foreign = Math.round(krw / rate * 100) / 100;
+  if (!krw) krw = Math.round(foreign * rate);
+  const memo = seg.replace(wm ? wm[0] : "", " ").replace(fm ? fm[0] : "", " ").replace(/환전|→|->|=|>/g, " ").replace(/\s+/g, " ").trim();
+  return { krw, foreign: Math.round(foreign * 100) / 100, memo };
+}
 function handleTripAdd() {
   const t = currentTrip(); if (!t) { openTripModal(); return; }
   const raw = $("tripInput").value.trim(); if (!raw) return;
+  if (/환전/.test(raw) && t.cur !== "KRW") {
+    const fx = parseFxText(raw, t);
+    if (fx) {
+      const today = getTodayStr();
+      const x = addFx(t, { date: today >= t.start && today <= t.end ? today : (today < t.start ? today : t.end), krw: fx.krw, foreign: fx.foreign, memo: fx.memo }, false);
+      $("tripInput").value = ""; $("tripHint").className = "hint ok";
+      $("tripHint").textContent = `환전 ${fmtWon(x.krw)} → ${fmtFx(x.foreign, t.cur)} 기록했어요`;
+      renderTrips(); return;
+    }
+  }
   let parsed;
   try { parsed = splitSegments(raw).map(seg => tripParse(seg, t)); }
   catch (e) { $("tripHint").className = "hint err"; $("tripHint").textContent = e.message; return; }
