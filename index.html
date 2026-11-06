@@ -800,6 +800,19 @@
     .hbar-val small { display: none; }
     .modal-content { padding: 20px 18px; }
   }
+
+  /* ============ 글씨: 본문은 보통 굵기, 제목·금액만 굵게 ============ */
+  .summary-sub, .bubble, .entry-cat, .empty, .hint, .modal-desc, .stat-sub, .trip-row span, .fx-row .fx-main small, .wish-eta,
+  .fixed-item-info span, .fixed-empty, .tile-sub, .saving-card-meta, .saving-card-amt span, .saving-card-foot > span, .hbar-val small,
+  .report-empty, .plan-mini span, .plan-empty-btn small, .plan-row .pl-avg, .recv-meta, .cat-row-count, .sync-card, .search-summary,
+  .day-label-sum, .cal-legend, .brand-tag, .auth-hero p, .auth-msg, .m-quick button small, .sav-forecast, .sav-forecast .note, .saving-preview,
+  .tour-text, .trip-summary .stat-sub, .imp-table .desc, .learn-row, #cfMsg, .budget-line, .wish-cap, .trip-summary .trip-rate > span { font-weight: 400; }
+  .plan-sum { font-weight: 400; } .plan-sum b, .sav-forecast span:nth-child(even), .sync-card b, .tour-text b, .bubble b { font-weight: 800; }
+  .modal-input, #entryInput, #tripInput, #searchInput, .imp-table select, .imp-table input[type=text] { font-weight: 400; }
+  .hint.ok, .hint.err { font-weight: 700; }
+  #toastText { font-weight: 400; }
+  /* 문장마다 줄바꿈 */
+  .modal-desc, .hint, .bubble, #toastText, .tour-text, .empty, .fixed-empty, .report-empty, .plan-sum, .auth-msg, .auth-hero p, .summary-sub, .sav-forecast .note, .trip-empty, .plan-empty-btn small, #cfMsg, .tile-sub, .sync-card, .wish-eta, .saving-preview { white-space: pre-line; }
 </style>
 
 <div class="data-actions-corner">
@@ -4527,4 +4540,29 @@ loadData();
 applyLayout();
 initCloud();
 setTimeout(() => maybeStartTour(), 1200);
+
+// =====================================================================
+// 문장 끝(. ! ?)마다 줄바꿈: 안내 문구·알림·잔소리에 자동으로 적용
+// =====================================================================
+const BREAK_SEL = ".modal-desc, .hint, .bubble, #toastText, .tour-text, .empty, .fixed-empty, .report-empty, .plan-sum, .auth-msg, .auth-hero p, .summary-sub, .sav-forecast .note, .trip-empty, .plan-empty-btn small, #cfMsg, .tile-sub, .sync-card, .wish-eta, .saving-preview";
+const RE_SENT = /([.!?])[ \u00A0]+(?=[^\s\d·~)\]])/g;
+function breakText(t) { return String(t).replace(RE_SENT, "$1\n"); }
+function breakNode(root) {
+  const walk = (n) => {
+    if (n.nodeType === 3) { if (RE_SENT.test(n.nodeValue)) { RE_SENT.lastIndex = 0; n.nodeValue = breakText(n.nodeValue); } RE_SENT.lastIndex = 0; return; }
+    if (n.nodeType === 1 && !/^(INPUT|TEXTAREA|SELECT|SCRIPT|STYLE)$/.test(n.tagName)) n.childNodes.forEach(walk);
+  };
+  walk(root);
+}
+function breakAll(scope) { (scope || document).querySelectorAll(BREAK_SEL).forEach(breakNode); }
+const breakObserver = new MutationObserver(muts => {
+  for (const m of muts) {
+    const el = m.type === "characterData" ? m.target.parentElement : m.target;
+    if (!el || !el.closest) continue;
+    const host = el.closest(BREAK_SEL);
+    if (host) breakNode(host);
+    else if (m.type === "childList") m.addedNodes.forEach(n => { if (n.nodeType === 1) { if (n.matches && n.matches(BREAK_SEL)) breakNode(n); breakAll(n); } });
+  }
+});
+breakAll(); breakObserver.observe(document.body, { subtree: true, childList: true, characterData: true });
 </script>
