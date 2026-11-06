@@ -344,6 +344,26 @@
 
   [hidden] { display: none !important; }
   .nick-row { display: flex; gap: 8px; }
+  /* 튜토리얼 */
+  .tour { position: fixed; inset: 0; z-index: 1200; }
+  .tour-spot { position: fixed; border-radius: 20px; box-shadow: 0 0 0 200vmax rgba(46, 34, 24, 0.55); transition: all 0.35s cubic-bezier(.3, 1.2, .5, 1); pointer-events: none; }
+  .tour-spot::after { content: ""; position: absolute; inset: -4px; border-radius: 24px; border: 3px dashed #FFD84D; animation: tourPulse 1.6s ease-in-out infinite; }
+  .tour-spot.center { width: 0 !important; height: 0 !important; left: 50% !important; top: 50% !important; }
+  .tour-spot.center::after { display: none; }
+  @keyframes tourPulse { 50% { transform: scale(1.025); opacity: .6; } }
+  .tour-card { position: fixed; width: min(340px, calc(100vw - 32px)); background: var(--paper); border-radius: 24px; padding: 40px 20px 16px; box-shadow: 0 16px 40px rgba(46, 34, 24, 0.28); transition: left 0.35s cubic-bezier(.3, 1.2, .5, 1), top 0.35s cubic-bezier(.3, 1.2, .5, 1); }
+  .tour-mascot { position: absolute; top: -46px; left: 16px; }
+  .tour-step { position: absolute; top: 14px; right: 18px; font-size: 11px; font-weight: 800; color: var(--muted); }
+  .tour-title { font-family: var(--display); font-weight: 400; font-size: 19px; margin: 0 0 6px; color: var(--ink); text-wrap: balance; }
+  .tour-text { font-size: 13.5px; line-height: 1.6; color: var(--ink); margin: 0; }
+  .tour-text b { background: linear-gradient(transparent 55%, #FFE89A 55%); font-weight: 800; }
+  .tour-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .tour-dots { display: flex; gap: 5px; flex: 1; }
+  .tour-dots i { width: 6px; height: 6px; border-radius: 99px; background: var(--line); transition: all 0.2s; }
+  .tour-dots i.on { width: 16px; background: #F5C53A; }
+  .tour-skip { background: none; border: none; color: var(--muted); font: 800 12.5px var(--body); cursor: pointer; padding: 8px; }
+  .tour-next { background: var(--ink); color: var(--paper); border: none; border-radius: 99px; padding: 10px 18px; font: 800 13.5px var(--body); cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) { .tour-spot, .tour-card { transition: none; } .tour-spot::after { animation: none; } }
   .recat-btn { width: 100%; margin-top: 8px; padding: 10px; font-size: 13px; }
   .nick-row .modal-input { flex: 1; min-width: 0; }
   .nick-save { flex: 0 0 auto; padding: 10px 18px; }
@@ -1060,6 +1080,10 @@
       <div class="manage-list" id="learnedList"></div>
       <button class="modal-btn btn-cancel recat-btn" onclick="recategorizeFromSettings()">지난 내역 다시 분류하기</button>
     </div>
+    <div class="set-section">
+      <div class="sub-title">사용법</div>
+      <button class="modal-btn btn-cancel recat-btn" onclick="closeModal('settingsModal'); setTimeout(() => startTour(true), 250)">튜토리얼 다시 보기</button>
+    </div>
     <button class="modal-btn btn-save" onclick="closeModal('settingsModal')">닫기</button>
   </div>
 </div>
@@ -1180,6 +1204,22 @@
     <div class="modal-btns">
       <button class="modal-btn btn-cancel" onclick="closeModal('nickModal')">나중에</button>
       <button class="modal-btn btn-save" onclick="saveNickFromModal()">정하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 튜토리얼 (코치마크) ============ -->
+<div class="tour" id="tour" hidden>
+  <div class="tour-spot" id="tourSpot"></div>
+  <div class="tour-card" id="tourCard" role="dialog" aria-live="polite" aria-labelledby="tourTitle">
+    <div class="tour-mascot" id="tourMascot"></div>
+    <div class="tour-step" id="tourStep"></div>
+    <h4 class="tour-title" id="tourTitle"></h4>
+    <p class="tour-text" id="tourText"></p>
+    <div class="tour-foot">
+      <div class="tour-dots" id="tourDots"></div>
+      <button class="tour-skip" onclick="endTour()">건너뛰기</button>
+      <button class="tour-next" id="tourNext" onclick="tourGo(1)">다음</button>
     </div>
   </div>
 </div>
@@ -1898,7 +1938,7 @@ function openEditModal(id) {
 function saveEditEntry() {
   const entry = entries.find(e => e.id === currentEditId);
   if (!entry) { closeModal("editModal"); return; }
-  const before = { type: entry.type, category: entry.category };
+  const before = { type: entry.type, category: entry.category, description: entry.description };
   entry.type = $("editType").value;
   if ($("editDate").value) entry.date = $("editDate").value;
   entry.description = $("editDesc").value.trim() || entry.description;
@@ -1918,7 +1958,28 @@ function saveEditEntry() {
     }
   }
   saveEntries(); refreshCatList(); renderAll(); closeModal("editModal");
-  if (sameN) showToast(`같은 이름 ${sameN}건도 ${entry.category}${pp(entry.category, '으로')} 바꿨어요`);
+  // 이름을 바꿨으면: 예전 이름과 같은 내역도 다 바꿀지 물어보기
+  const oldKey = entryKey(before.description);
+  const twins = before.description !== entry.description && oldKey ? entries.filter(e => e.id !== entry.id && entryKey(e.description) === oldKey) : [];
+  if (twins.length) {
+    const catToo = before.category !== entry.category;
+    askConfirm("같은 이름도 바꿀까요?", `'${before.description}'${pp(before.description, '이', '가')} ${twins.length}건 더 있어요.\n전부 '${entry.description}'${pp(entry.description, '으로')} 바꿀까요?${catToo ? `\n(카테고리도 ${entry.category}${pp(entry.category, '으로')})` : ""}`, `${twins.length}건 다 바꾸기`, "이것만").then(ok => {
+      if (!ok) return;
+      const prev = twins.map(e => [e.id, e.description, e.category, e.type]);
+      twins.forEach(e => {
+        const tail = (e.description.match(/\s*\((할부 \d+\/\d+|\d+명 n빵|취소)\)$/) || [""])[0];
+        e.description = entry.description + tail;
+        if (catToo && !e.savingId) { e.category = entry.category; e.type = entry.type; }
+      });
+      const nk = entryKey(entry.description);
+      if (nk && !learned[nk]) { learned[nk] = { category: entry.category, type: entry.type }; saveLearned(); }
+      saveEntries(); refreshCatList(); renderAll();
+      offerUndo(`${twins.length}건 이름도 바꿨어요`, () => {
+        prev.forEach(([id, d, c, t]) => { const e = entries.find(x => x.id === id); if (e) { e.description = d; e.category = c; e.type = t; } });
+        saveEntries(); refreshCatList(); renderAll();
+      });
+    });
+  } else if (sameN) showToast(`같은 이름 ${sameN}건도 ${entry.category}${pp(entry.category, '으로')} 바꿨어요`);
 }
 // 할부·n빵 꼬리표를 뗀 이름 → 학습 규칙 열쇠
 function entryKey(desc) { return norm(String(desc || "").replace(/\s*\((할부 \d+\/\d+|\d+명 n빵|취소)\)/g, "")); }
@@ -3052,7 +3113,7 @@ async function readTableFile(file) {
 // 머리줄/열 찾기
 const COL_RULES = {
   date: [/거래일시|거래일자|이용일자|승인일자|사용일자|결제일자|이용일시|승인일시|이용일|거래일|일자|날짜|일시|date/i],
-  desc: [/가맹점|이용처|이용하신곳|사용처|상호|merchant/i, /적요|기재내용|거래내용|받는분|보낸분|입금자|거래처|내용|description/i, /메모|비고|memo/i],
+  desc: [/가맹점|이용처|이용하신곳|사용처|상호|merchant/i, /기재내용|거래내용|받는분|보낸분|입금자|거래처|내용|description/i, /적요/, /메모|비고|memo/i],
   out: [/출금액|출금|찾으신|지급액|지급|인출|withdraw/i],
   in: [/입금액|입금|맡기신|deposit/i],
   amount: [/이용금액|결제금액|승인금액|사용금액|청구금액|거래금액|결제원금|금액|amount/i],
@@ -3080,7 +3141,7 @@ function detectMap(header) {
 }
 function parseAmt(v) {
   if (typeof v === "number") return v;
-  const s = String(v ?? "").trim(); if (!s) return 0;
+  const s = String(v ?? "").trim().replace(/[−－–—]/g, "-"); if (!s) return 0;
   const neg = /^\(.*\)$/.test(s) || /^-/.test(s) || /-$/.test(s);
   const n = parseFloat(s.replace(/[^\d.]/g, ""));
   return isNaN(n) ? 0 : (neg ? -n : n);
@@ -3153,7 +3214,13 @@ function isOwnTransfer(desc, extra) {
 function buildImportItems() {
   const { rows, headerIdx, map, extraCols = [], kindCol = -1, bankSign = false } = impState, items = [];
   const data = rows.slice(headerIdx + 1);
-  const signed = map.amount > -1 && data.some(r => r && parseAmt(r[map.amount]) < 0);
+  // 금액 칸 하나에 -가 섞여 있으면: - 붙은 건 지출, 나머지는 전부 수입
+  // (카드 명세서처럼 -가 아주 가끔만 있으면 그건 취소/환불로 봐요)
+  const amts = map.amount > -1 ? data.filter(r => r && parseCellDate(r[map.date])).map(r => parseAmt(r[map.amount])).filter(v => v) : [];
+  const negs = amts.filter(v => v < 0).length;
+  const head = (impState.header || []).map(h => String(h ?? "").replace(/\s/g, "")).join("|");
+  const cardLike = !bankSign && /가맹점|이용처|이용금액|승인금액|결제금액|카드|할부/.test(head);
+  const signed = negs > 0 && !cardLike;
   data.forEach(r => {
     if (!r || map.date < 0) return;
     const date = parseCellDate(r[map.date]); if (!date) return;
@@ -3163,10 +3230,10 @@ function buildImportItems() {
       if (o > 0) amount = o; else if (i > 0) { amount = i; type = "income"; }
     } else if (map.amount > -1) {
       const v = parseAmt(r[map.amount]);
-      if (bankSign && signed) { amount = Math.abs(v); type = v < 0 ? "expense" : "income"; } // 통장: +들어옴 / -나감
+      if (signed) { amount = Math.abs(v); type = v < 0 ? "expense" : "income"; } // 통장: -나감 / 나머지 들어옴
       else if (v < 0) { type = "income"; amount = -v; refund = true; } else amount = v; // 카드 내역의 마이너스 = 취소/환불
     }
-    if (kindCol > -1 && !(bankSign && signed)) { const k = String(r[kindCol] ?? ""); if (/수입|입금/.test(k)) type = "income"; else if (/지출|출금|결제|송금/.test(k)) type = "expense"; }
+    if (kindCol > -1 && !signed) { const k = String(r[kindCol] ?? ""); if (/수입|입금/.test(k)) type = "income"; else if (/지출|출금|결제|송금/.test(k)) type = "expense"; }
     amount = Math.round(amount);
     if (!(amount > 0)) return;
     const rawDesc = String(map.desc > -1 ? r[map.desc] ?? "" : "").replace(/\s+/g, " ").trim();
@@ -3640,12 +3707,114 @@ async function startSupabaseSync(user) {
   }
   if (isOpen("settingsModal")) renderSettings();
 }
+let nickPending = false;
 function applyAccountNick(user) {
   if (settings.nickname) return;
   const metaNick = cleanNick(user && user.user_metadata && user.user_metadata.nickname);
   if (metaNick) setNickname(metaNick, true);
-  else setTimeout(() => { if (!settings.nickname && !isOpen("confirmModal")) openNickModal(); }, 900);
+  else { nickPending = true; setTimeout(() => { nickPending = false; if (!settings.nickname && !isOpen("confirmModal")) openNickModal(); }, 900); }
 }
+// =====================================================================
+// 튜토리얼: 말랑이랑 같이 둘러보기
+// =====================================================================
+const TOUR_PC = [
+  { mood: "happy", title: "안녕! 나는 말랑이야", text: "지계부를 같이 지켜줄 노란 친구야. 어디에 뭐가 있는지 금방 알려줄게!" },
+  { sel: ".input-card", mood: "laugh", title: "여기에 대충 적어", text: "<b>어제 떡볶이 8000</b>처럼 막 적어도 날짜·금액·카테고리를 내가 알아서 정리해. 쉼표로 여러 개, <b>3개월 할부</b>, <b>4명 n빵</b>도 돼!" },
+  { sel: "#ledgerSideWrap > .summary-card", mood: "proud", title: "이번 달 남은 돈", text: "들어온 돈에서 쓴 돈을 뺀 잔액이야. 적금으로 모은 돈은 쓴 돈에 안 넣어." },
+  { sel: "#naggingBox", mood: "angry", title: "가끔 잔소리도 해", text: "카페를 너무 자주 가거나 예산을 넘으면 내가 한마디 할게. 누르면 다음 잔소리! 순한맛·매운맛은 <b>설정</b>에서 골라." },
+  { sel: ".calendar-card", mood: "surprised", title: "달력으로 한눈에", text: "날짜를 누르면 그날 쓴 것만 모아 보여줘. 빨간 점은 지출, 초록 동그라미는 무지출 날이야." },
+  { sel: "#btnFixedManage", mood: "happy", title: "매달 나가는 돈은 여기", text: "월세·구독 같은 고정 지출이랑 적금을 한 번만 적어두면 매달 알아서 챙겨줘." },
+  { sel: "#btnModeWish", mood: "love", title: "갖고 싶은 것도 모아봐", text: "위시리스트에 담고 목표를 정하면 언제쯤 살 수 있을지 계산해줄게." },
+  { sel: ".data-actions-corner", mood: "wink", title: "구석에 있는 도구들", text: "백업, 그리고 ⚙ <b>설정</b>에서 은행·카드 엑셀 가져오기, 엑셀 내보내기, 색 바꾸기를 할 수 있어." },
+  { mood: "proud", title: "이제 써볼까?", text: "첫 기록을 남겨봐! 다시 보고 싶으면 <b>설정 맨 아래 → 튜토리얼 다시 보기</b>." },
+];
+const TOUR_M = [
+  { mood: "happy", title: "안녕! 나는 말랑이야", text: "지계부를 같이 지켜줄 노란 친구야. 어디에 뭐가 있는지 금방 알려줄게!", tab: "home" },
+  { sel: ".input-card", mood: "laugh", title: "여기에 대충 적어", text: "<b>어제 떡볶이 8000</b>처럼 막 적어도 내가 알아서 정리해. 쉼표로 여러 개도 돼!", tab: "home" },
+  { sel: "#ledgerSideWrap > .summary-card", mood: "proud", title: "이번 달 남은 돈", text: "들어온 돈에서 쓴 돈을 뺀 잔액이야.", tab: "home" },
+  { sel: "#naggingBox", mood: "angry", title: "가끔 잔소리도 해", text: "너무 많이 쓰면 한마디 할게. 누르면 다음 잔소리!", tab: "home" },
+  { sel: "#mQuick", mood: "surprised", title: "자주 쓰는 것들", text: "리포트·예산, 고정 지출·적금, 받을 돈, 포인트를 여기서 바로 열어.", tab: "home" },
+  { sel: "#mNav", mood: "wink", title: "아래 탭으로 이동", text: "내역·달력·위시를 오가고, <b>설정</b>에서 엑셀 가져오기랑 색 바꾸기를 할 수 있어.", tab: "home" },
+  { mood: "proud", title: "이제 써볼까?", text: "첫 기록을 남겨봐! 다시 보고 싶으면 <b>설정 맨 아래 → 튜토리얼 다시 보기</b>.", tab: "home" },
+];
+let tour = null;
+function tourSteps() {
+  const mobile = document.body.classList.contains("m-layout");
+  return (mobile ? TOUR_M : TOUR_PC).filter(st => !st.sel || document.querySelector(st.sel));
+}
+function startTour(force) {
+  if (!force && settings.tourDone) return;
+  if (currentAppMode !== "ledger") switchMode("ledger");
+  tour = { steps: tourSteps(), i: 0 };
+  $("tour").hidden = false; document.body.classList.add("touring");
+  showTourStep();
+}
+// 처음 들어왔을 때: 로그인 화면·팝업이 다 닫히면 시작
+function maybeStartTour(tries = 0) {
+  if (settings.tourDone || tour) return;
+  const syncing = cloud.provider && cloud.uid && !cloud.ready; // 계정 내용(본 적 있는지)을 다 받은 뒤에
+  const busy = !$("authGate").hidden || document.querySelector(".modal-overlay.show") || syncing || nickPending;
+  if (busy) { if (tries < 60) setTimeout(() => maybeStartTour(tries + 1), 1000); return; }
+  startTour();
+}
+function endTour() {
+  $("tour").hidden = true; document.body.classList.remove("touring"); tour = null;
+  if (!settings.tourDone) { settings.tourDone = true; saveSettings(); schedulePush(); }
+}
+function tourGo(d) {
+  if (!tour) return;
+  const n = tour.i + d;
+  if (n >= tour.steps.length) { endTour(); setTimeout(() => { try { $("entryInput").focus(); } catch (e) {} }, 100); return; }
+  if (n < 0) return;
+  tour.i = n; showTourStep();
+}
+function showTourStep() {
+  const st = tour.steps[tour.i], last = tour.i === tour.steps.length - 1;
+  if (st.tab && document.body.classList.contains("m-layout")) setMTab(st.tab, true);
+  $("tourMascot").innerHTML = mascotSVG(st.mood, 76);
+  const svg = $("tourMascot").firstElementChild; if (svg) svg.classList.add("mood-pop");
+  $("tourStep").textContent = `${tour.i + 1} / ${tour.steps.length}`;
+  $("tourTitle").textContent = st.title; $("tourText").innerHTML = st.text;
+  $("tourDots").innerHTML = tour.steps.map((_, k) => `<i class="${k === tour.i ? "on" : ""}"></i>`).join("");
+  $("tourNext").textContent = last ? "시작하기" : "다음";
+  const el = st.sel ? document.querySelector(st.sel) : null;
+  if (el) el.scrollIntoView({ block: "nearest", behavior: "instant" });
+  requestAnimationFrame(placeTour);
+  setTimeout(() => $("tourNext").focus(), 50);
+}
+function placeTour() {
+  if (!tour) return;
+  const st = tour.steps[tour.i], spot = $("tourSpot"), card = $("tourCard");
+  const el = st.sel ? document.querySelector(st.sel) : null;
+  const vw = innerWidth, vh = innerHeight, cw = card.offsetWidth, ch = card.offsetHeight, gap = 16, pad = 8;
+  if (!el) {
+    spot.classList.add("center");
+    card.style.left = Math.round((vw - cw) / 2) + "px"; card.style.top = Math.round((vh - ch) / 2 + 20) + "px";
+    return;
+  }
+  spot.classList.remove("center");
+  const r = el.getBoundingClientRect();
+  const x = Math.max(4, r.left - pad), y = Math.max(4, r.top - pad), w = Math.min(vw - 8, r.width + pad * 2), h = Math.min(vh - 8, r.height + pad * 2);
+  Object.assign(spot.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
+  // 카드는 빈 공간이 넓은 쪽에: 아래 → 위 → 오른쪽 → 왼쪽 → 가운데
+  const below = vh - (y + h), above = y, right = vw - (x + w), left = x;
+  let cx, cy;
+  if (below >= ch + gap + 46) { cy = y + h + gap + 46; cx = x + w / 2 - cw / 2; }
+  else if (above >= ch + gap) { cy = y - gap - ch; cx = x + w / 2 - cw / 2; }
+  else if (right >= cw + gap) { cx = x + w + gap; cy = y + h / 2 - ch / 2 + 23; }
+  else if (left >= cw + gap) { cx = x - gap - cw; cy = y + h / 2 - ch / 2 + 23; }
+  else { cx = (vw - cw) / 2; cy = vh - ch - 16; }
+  cx = Math.max(16, Math.min(vw - cw - 16, cx)); cy = Math.max(56, Math.min(vh - ch - 12, cy));
+  card.style.left = Math.round(cx) + "px"; card.style.top = Math.round(cy) + "px";
+}
+addEventListener("resize", () => { if (tour) placeTour(); });
+addEventListener("keydown", (e) => {
+  if (!tour) return;
+  if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); endTour(); }
+  else if (e.key === "ArrowRight" || e.key === "Enter") { e.preventDefault(); tourGo(1); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); tourGo(-1); }
+}, true);
+
 function scheduleRemoteCheck() { clearTimeout(remoteCheckTimer); remoteCheckTimer = setTimeout(remoteCheck, 600); }
 async function remoteCheck() {
   if (cloud.provider !== "supabase" || !cloud.ready || !cloud.uid) return;
@@ -3757,4 +3926,5 @@ initSettings();
 loadData();
 applyLayout();
 initCloud();
+setTimeout(() => maybeStartTour(), 1200);
 </script>
