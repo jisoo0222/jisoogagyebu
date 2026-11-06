@@ -2517,7 +2517,7 @@ function savingCardHTML(s, nowYM) {
     </div>
     ${forecast}
     ${openEnded ? "" : `<div class="progress" role="progressbar" aria-valuenow="${p.pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${escapeAttr(s.name)} ${p.pct}%"><div style="width:${p.pct}%"></div></div>`}
-    <div class="month-dots">${dots}</div>
+    ${openEnded ? "" : `<div class="month-dots">${dots}</div>`}
     <div class="saving-card-foot"><span>${foot}</span>
       <div class="btns">
         ${closed ? "" : `<button class="btn-show-all" onclick="editSaving('${s.id}')">수정</button>`}
