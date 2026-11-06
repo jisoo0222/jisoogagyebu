@@ -497,6 +497,53 @@
   .budget-row .progress { margin: 5px 0 0; height: 8px; }
   .budget-row .progress.over > div { background: var(--warn); }
   .report-empty { font-size: 12.5px; font-weight: 700; color: var(--muted); padding: 8px 4px; }
+  /* 한 달 돈 계획 */
+  .plan-card { position: relative; z-index: 1; margin-top: 10px; padding: 9px 11px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; background: var(--glass-strong); color: var(--ink); border-radius: var(--r-md); }
+  .plan-card:has(.plan-empty-btn) { padding: 0; background: transparent; }
+  .plan-card:hover { background: var(--paper); }
+  .plan-card:empty { display: none; }
+  .plan-card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; white-space: nowrap; }
+  .plan-card-title { font-size: 12px; font-weight: 800; color: var(--muted); overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .plan-card-title u { text-decoration: none; color: var(--ink); margin-left: 4px; }
+  .plan-daily { font-family: var(--display); font-size: 16px; flex: 0 0 auto; }
+  .plan-daily.over { color: var(--warn); }
+  .plan-mini { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .plan-mini > div { background: var(--paper); border-radius: 10px; padding: 4px 8px 5px; min-width: 0; }
+  .plan-mini b { display: block; font-size: 11.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .plan-mini span { display: block; font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .plan-mini span.over { color: var(--warn); }
+  .plan-mini .progress { height: 4px; margin: 3px 0 0; background: var(--cream); }
+  .plan-mini .progress > div { background: var(--point-deep); }
+  .plan-mini .progress.over > div { background: var(--warn); }
+  .plan-empty-btn { width: 100%; border: none; background: var(--glass-strong); border-radius: 14px; padding: 10px 12px; text-align: left; cursor: pointer; font: 800 12.5px var(--body); color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .plan-empty-btn:hover { background: var(--paper); }
+  .plan-empty-btn small { display: block; font-weight: 700; color: var(--muted); font-size: 11px; margin-top: 1px; }
+  .plan-cta { margin: 6px 0 2px; }
+  .plan-cta .plan-empty-btn { background: var(--cream); }
+  @media (max-height: 820px) { body:not(.m-layout) .plan-mini span { display: none; } body:not(.m-layout) .summary-sub { margin-top: 8px; } }
+  .plan-top { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
+  .plan-top input[type=range] { width: 100%; accent-color: var(--point-deep); }
+  .plan-sum { background: var(--cream); border-radius: var(--r-md); padding: 10px 14px; font-size: 13px; font-weight: 800; line-height: 1.6; margin: 10px 0; }
+  .plan-sum .ok { color: var(--income); } .plan-sum .over { color: var(--warn); }
+  .plan-head, .plan-row { display: grid; grid-template-columns: minmax(0, 1fr) 80px 196px 100px; gap: 8px; align-items: center; }
+  .plan-head { font-size: 11px; font-weight: 800; color: var(--muted); padding: 0 4px 4px; }
+  .plan-rows { display: flex; flex-direction: column; gap: 4px; max-height: 42vh; overflow-y: auto; }
+  .plan-row { padding: 5px 4px; border-radius: 12px; }
+  .plan-row:hover { background: var(--cream); }
+  .plan-row .pl-name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; min-width: 0; white-space: nowrap; }
+  .plan-row .pl-name > span { overflow: hidden; text-overflow: ellipsis; }
+  .plan-row .pl-name em { flex: 0 0 auto; font-style: normal; font-size: 10px; color: var(--muted); background: var(--cream); border-radius: 99px; padding: 0 6px; }
+  .plan-row .pl-avg { font-size: 12.5px; font-weight: 700; color: var(--muted); text-align: right; }
+  .plan-row .pl-cuts { display: flex; gap: 3px; flex-wrap: nowrap; }
+  .plan-row .pl-cuts button { border: 1px solid var(--line); background: var(--paper); border-radius: 99px; padding: 3px 7px; white-space: nowrap; font: 800 11px var(--body); color: var(--muted); cursor: pointer; }
+  .plan-row .pl-cuts button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .plan-row input { padding: 6px 8px; font-size: 13px; text-align: right; }
+  .plan-auto { margin-top: 8px; }
+  body.m-layout .plan-head { display: none; }
+  body.m-layout .plan-row { grid-template-columns: 1fr 110px; grid-template-areas: "n i" "c a"; row-gap: 4px; border-bottom: 1px solid var(--line); border-radius: 0; padding: 8px 2px; }
+  body.m-layout .plan-row .pl-name { grid-area: n; } body.m-layout .plan-row input { grid-area: i; }
+  body.m-layout .plan-row .pl-cuts { grid-area: c; flex-wrap: wrap; } body.m-layout .plan-row .pl-avg { grid-area: a; }
+  body.m-layout .plan-top { grid-template-columns: 1fr; }
   .budget-grid { display: grid; grid-template-columns: 1fr 140px; gap: 6px 10px; align-items: center; }
   .budget-grid label { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
   .budget-grid .modal-input { padding: 8px 11px; }
@@ -631,7 +678,7 @@
   body.m-layout[data-mtab="home"] .calendar-card,
   body.m-layout[data-mtab="home"] #ledgerMainWrap > :not(.input-card) { display: none !important; }
   body.m-layout[data-mtab="list"] .left-panel { display: none; }
-  body.m-layout[data-mtab="cal"] #naggingBox, body.m-layout[data-mtab="cal"] #ledgerSideWrap > .summary-card, body.m-layout[data-mtab="cal"] .m-quick { display: none !important; }
+  body.m-layout[data-mtab="cal"] #planCard, body.m-layout[data-mtab="cal"] #naggingBox, body.m-layout[data-mtab="cal"] #ledgerSideWrap > .summary-card, body.m-layout[data-mtab="cal"] .m-quick { display: none !important; }
   /* 입력창: 아래 탭 바로 위에 고정 */
   body.m-layout .right-panel .input-card {
     position: fixed; left: 50%; right: auto; transform: translateX(-50%); width: min(100%, 560px);
@@ -706,6 +753,14 @@
     body:not(.m-layout) #entryInput { padding: 6px 0; }
     body:not(.m-layout) .hint { margin-top: 5px; }
     body:not(.m-layout) .wishlist-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  }
+  /* 화면이 낮은 PC(1366×768 등): 돈 계획까지 한 화면에 */
+  @media (min-width: 901px) and (max-height: 820px) {
+    body:not(.m-layout) .cal-day { height: 24px; }
+    body:not(.m-layout) .cal-legend { margin-top: 3px; }
+    body:not(.m-layout) .summary-card { padding: 12px 16px; }
+    body:not(.m-layout) .summary-amount { font-size: 27px; margin: 0 0 8px; }
+    body:not(.m-layout) .plan-card { margin-top: 8px; padding: 7px 10px; gap: 5px; }
   }
 
   /* ============ 반응형 ============ */
@@ -791,6 +846,7 @@
         <button class="recv-line" id="recvLine" style="display:none;" onclick="openRecvModal()"></button>
         <button class="recv-line" id="pointLine" style="display:none;" onclick="openPointModal()"></button>
         <div class="summary-sub" id="summarySub"></div>
+        <div class="plan-card" id="planCard"></div>
       </div>
 
       <div class="m-quick" id="mQuick">
@@ -1047,9 +1103,30 @@
     <div class="hbars" id="reportCats"></div>
     <div class="sub-title">최근 6개월 쓴 돈</div>
     <div id="reportTrend"></div>
+    <div class="plan-cta" id="reportPlan"></div>
     <div class="sub-title-row"><span class="sub-title">예산</span><button class="btn-show-all" onclick="openBudgetModal()">예산 정하기</button></div>
     <div class="budget-rows" id="reportBudget"></div>
     <button class="modal-btn btn-save" style="margin-top:8px;" onclick="closeModal('reportModal')">닫기</button>
+  </div>
+</div>
+
+<!-- ============ 팝업: 한 달 돈 계획 ============ -->
+<div class="modal-overlay" id="planModal">
+  <div class="modal-content modal-wide">
+    <h3 class="modal-title">한 달 돈 계획 만들기</h3>
+    <p class="modal-desc" id="planBasis"></p>
+    <div class="plan-top">
+      <label class="field"><span>한 달 수입 (평균)</span><input id="plIncome" type="number" min="0" class="modal-input" oninput="renderPlanModal(true)" /></label>
+      <div class="field"><span>저축 목표 <b id="plSaveTxt"></b></span><input id="plSave" type="range" min="0" max="60" step="5" oninput="renderPlanModal(true)" /></div>
+    </div>
+    <div class="plan-sum" id="plSum"></div>
+    <div class="plan-head"><span>카테고리</span><span>평소 한 달</span><span>줄이기</span><span>계획</span></div>
+    <div class="plan-rows" id="plRows"></div>
+    <button class="btn-show-all plan-auto" onclick="autoFitPlan()">쓸 수 있는 돈에 맞게 자동으로 줄이기</button>
+    <div class="modal-btns">
+      <button class="modal-btn btn-cancel" onclick="closeModal('planModal')">취소</button>
+      <button class="modal-btn btn-save" onclick="savePlan()">이 계획으로 하기</button>
+    </div>
   </div>
 </div>
 
@@ -2483,6 +2560,111 @@ function saveBudgets() {
   saveBudgetStore(); closeModal("budgetModal"); renderAll(); if (isOpen("reportModal")) renderReport();
   showToast("예산을 저장했어요");
 }
+// =====================================================================
+// 한 달 돈 계획: 평소 수입·지출로 카테고리별 쓸 돈 정하기 (저장하면 예산이 돼요)
+// =====================================================================
+const PLAN_FIXED = new Set(["주거/통신", "교육", "의료", "경조사비"]); // 줄이기 어려운 것
+const PLAN_CUTS = [0, 10, 20, 30];
+let planDraft = null;
+function planHistory() {
+  // 이번 달 전 최근 3달 중 기록이 있는 달. 없으면 이번 달
+  const months = [];
+  for (let i = 1; i <= 6 && months.length < 3; i++) {
+    const d = new Date(currentYear, currentMonth - i, 1);
+    if (entries.some(e => inMonth(e, d.getFullYear(), d.getMonth()))) months.push({ y: d.getFullYear(), m: d.getMonth() });
+  }
+  const thisOnly = !months.length;
+  if (thisOnly) months.push({ y: currentYear, m: currentMonth });
+  const n = months.length, byCat = {};
+  let inc = 0, spend = 0;
+  months.forEach(({ y, m }) => {
+    const l = entries.filter(e => inMonth(e, y, m));
+    inc += sumBy(l, e => e.type === "income" && e.category !== "내 계좌 이체");
+    l.filter(isSpend).filter(e => e.category !== "내 계좌 이체").forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + e.amount; spend += e.amount; });
+  });
+  const avg = {};
+  Object.keys(byCat).forEach(c => avg[c] = Math.round(byCat[c] / n / 1000) * 1000);
+  return { months, n, thisOnly, income: Math.round(inc / n / 1000) * 1000, spend: Math.round(spend / n), avg };
+}
+function openPlanModal() {
+  const h = planHistory(), prev = budgets.plan || {};
+  const cats = [...new Set([...Object.keys(h.avg).sort((a, b) => h.avg[b] - h.avg[a]), ...Object.keys(budgets.cats || {}), ...EXPENSE_CATS.filter(c => c !== "기타")])];
+  planDraft = { h, cats, cut: Object.assign({}, prev.cuts || {}), amt: {} };
+  cats.forEach(c => { planDraft.amt[c] = budgets.cats && budgets.cats[c] && prev.cuts ? budgets.cats[c] : Math.round((h.avg[c] || 0) * (1 - (planDraft.cut[c] || 0) / 100) / 1000) * 1000; });
+  $("plIncome").value = prev.income || h.income || "";
+  const curRate = h.income ? Math.max(0, Math.min(60, Math.round((1 - h.spend / h.income) * 20) * 5)) : 20;
+  $("plSave").value = prev.saveRate != null ? prev.saveRate : Math.max(10, Math.min(30, curRate));
+  const label = h.months.map(o => `${o.m + 1}월`).join("·");
+  $("planBasis").textContent = h.thisOnly
+    ? "아직 지난 기록이 없어서 이번 달 기록으로 계산했어요. 기록이 쌓일수록 정확해져요."
+    : `${label} 기록으로 평균을 냈어요. 줄이고 싶은 카테고리는 줄이기를 누르거나 계획 금액을 직접 고치세요.`;
+  renderPlanModal(); openModal("planModal");
+}
+function renderPlanModal(onlySum) {
+  const d = planDraft; if (!d) return;
+  const income = Math.max(0, parseInt($("plIncome").value, 10) || 0), rate = +$("plSave").value;
+  const saveGoal = Math.round(income * rate / 100 / 1000) * 1000, can = income - saveGoal;
+  $("plSaveTxt").textContent = `${rate}% · ${fmtWon(saveGoal)}`;
+  if (!onlySum) {
+    $("plRows").innerHTML = d.cats.map((c, i) => `<div class="plan-row"><span class="pl-name">${catIcon(c, 22)}<span>${escapeHtml(c)}</span>${PLAN_FIXED.has(c) ? "<em>고정</em>" : ""}</span>
+      <span class="pl-avg">${d.h.avg[c] ? fmtWon(d.h.avg[c]) : "-"}</span>
+      <span class="pl-cuts">${PLAN_CUTS.map(p => `<button class="${(d.cut[c] || 0) === p ? "on" : ""}" onclick="setPlanCut(${i}, ${p})">${p ? `-${p}%` : "그대로"}</button>`).join("")}</span>
+      <input class="modal-input" type="number" min="0" step="1000" data-i="${i}" value="${d.amt[c] || ""}" placeholder="0" oninput="planDraft.amt[planDraft.cats[${i}]] = Math.max(0, parseInt(this.value, 10) || 0); renderPlanModal(true)" aria-label="${escapeAttr(c)} 계획 금액" /></div>`).join("");
+  }
+  const total = d.cats.reduce((a, c) => a + (d.amt[c] || 0), 0), left = can - total;
+  const usual = d.h.spend;
+  $("plSum").innerHTML = `수입 ${fmtWon(income)} − 저축 ${fmtWon(saveGoal)} = <b>쓸 수 있는 돈 ${fmtWon(can)}</b><br>
+    계획 합계 ${fmtWon(total)}${usual ? (Math.abs(total - usual) < 1000 ? " (평소랑 비슷해요)" : ` (평소보다 ${total < usual ? fmtWon(usual - total) + " 덜" : fmtWon(total - usual) + " 더"})`) : ""} · ${left >= 0 ? `<span class="ok">${fmtWon(left)} 여유 있어요</span>` : `<span class="over">${fmtWon(-left)} 넘어요 — 줄이기를 눌러보세요</span>`}`;
+}
+function setPlanCut(i, p) {
+  const d = planDraft, c = d.cats[i];
+  d.cut[c] = p; d.amt[c] = Math.round((d.h.avg[c] || d.amt[c] || 0) * (1 - p / 100) / 1000) * 1000;
+  renderPlanModal();
+}
+function autoFitPlan() {
+  const d = planDraft, income = Math.max(0, parseInt($("plIncome").value, 10) || 0), rate = +$("plSave").value;
+  const can = income - Math.round(income * rate / 100 / 1000) * 1000;
+  const total = d.cats.reduce((a, c) => a + (d.amt[c] || 0), 0);
+  if (!income) { showToast("한 달 수입을 먼저 적어주세요"); return; }
+  if (total <= can) { showToast("이미 쓸 수 있는 돈 안에 들어와요 👍"); return; }
+  const flex = d.cats.filter(c => !PLAN_FIXED.has(c) && d.amt[c] > 0), fixed = total - flex.reduce((a, c) => a + d.amt[c], 0);
+  const room = can - fixed, flexSum = flex.reduce((a, c) => a + d.amt[c], 0);
+  if (room <= 0 || !flexSum) { showToast("고정 지출만으로도 넘어요. 저축 목표를 낮춰보세요"); return; }
+  const k = room / flexSum;
+  flex.forEach(c => { d.amt[c] = Math.floor(d.amt[c] * k / 1000) * 1000; const base = d.h.avg[c]; d.cut[c] = base ? Math.round((1 - d.amt[c] / base) * 100) : 0; if (!PLAN_CUTS.includes(d.cut[c])) d.cut[c] = -1; });
+  renderPlanModal(); showToast(`고정 지출은 두고 나머지를 ${Math.round((1 - k) * 100)}%씩 줄였어요`);
+}
+function savePlan() {
+  const d = planDraft, income = Math.max(0, parseInt($("plIncome").value, 10) || 0), rate = +$("plSave").value;
+  const cats = {}; d.cats.forEach(c => { if (d.amt[c] > 0) cats[c] = d.amt[c]; });
+  if (!Object.keys(cats).length) { showToast("카테고리 계획을 하나 이상 적어주세요"); return; }
+  const cuts = {}; Object.keys(d.cut).forEach(c => { if (d.cut[c]) cuts[c] = d.cut[c]; });
+  budgets.cats = cats; budgets.total = Object.values(cats).reduce((a, b) => a + b, 0);
+  budgets.plan = { income, saveRate: rate, cuts, at: Date.now() };
+  saveBudgetStore(); closeModal("planModal"); renderAll(); if (isOpen("reportModal")) renderReport();
+  showToast(`계획 완성! 한 달 ${fmtWon(budgets.total)} 안에서 써봐요`);
+}
+function renderPlanCard() {
+  const el = $("planCard"); if (!el) return;
+  const y = currentYear, m = currentMonth, now = new Date();
+  const isThis = y === now.getFullYear() && m === now.getMonth();
+  if (!budgets.plan || !budgets.total) {
+    el.onclick = null; el.title = "";
+    el.innerHTML = `<button class="plan-empty-btn" onclick="openPlanModal()"><span>한 달 돈 계획 만들기<small>평소 수입·지출로 카테고리별 쓸 돈을 정해줘요</small></span>${CHEVRON}</button>`;
+    return;
+  }
+  const st = budgetStatus(y, m), left = st.total - st.spent;
+  const days = isThis ? new Date(y, m + 1, 0).getDate() - now.getDate() + 1 : 0;
+  const head = isThis
+    ? (left >= 0 ? `<span class="plan-daily">하루 ${fmtWon(Math.floor(left / days / 100) * 100)}씩</span>` : `<span class="plan-daily over">${fmtWon(-left)} 넘었어요</span>`)
+    : `<span class="plan-daily ${left < 0 ? "over" : ""}">${left >= 0 ? fmtWon(left) + " 남았어요" : fmtWon(-left) + " 넘었어요"}</span>`;
+  const rows = st.cats.map(c => ({ ...c, r: c.used / c.limit })).sort((a, b) => b.r - a.r).slice(0, 3);
+  el.onclick = (ev) => { if (!ev.target.closest("button")) openPlanModal(); };
+  el.title = "눌러서 계획 고치기";
+  el.innerHTML = `<div class="plan-card-top"><span class="plan-card-title">${m + 1}월 돈 계획 <u>${shortWon(st.total)}</u></span>${head}</div>
+    <div class="plan-mini">${rows.map(c => { const over = c.used > c.limit; return `<div title="${escapeAttr(`${c.cat} ${fmtWon(c.used)} / ${fmtWon(c.limit)}`)}"><b>${escapeHtml(c.cat)}</b><span class="${over ? "over" : ""}">${shortWon(c.used)} / ${shortWon(c.limit)}</span><div class="progress ${over ? "over" : ""}"><div style="width:${Math.min(100, c.r * 100)}%"></div></div></div>`; }).join("")}</div>
+    `;
+}
 function openReport() { reportYM = { y: currentYear, m: currentMonth }; renderReport(); openModal("reportModal"); }
 function moveReport(dir) { const d = new Date(reportYM.y, reportYM.m + dir, 1); reportYM = { y: d.getFullYear(), m: d.getMonth() }; renderReport(); }
 function renderReport() {
@@ -2513,6 +2695,7 @@ function renderReport() {
       return `<div class="vbar-col" data-tip="${o.y}년 ${o.m + 1}월 · ${fmtWon(vals[i])}" tabindex="0">${cur ? `<span class="vbar-val" style="bottom:${h}%">${shortWon(vals[i])}</span>` : ""}<div class="vbar ${cur ? "current" : ""}" style="height:${h}%"></div></div>`;
     }).join("")}</div><div class="vbar-labels">${months.map((o, i) => `<span class="${i === months.length - 1 ? "current" : ""}">${o.m + 1}월</span>`).join("")}</div>`
     : `<div class="report-empty">최근 6개월 기록이 없어요.</div>`;
+  $("reportPlan").innerHTML = `<button class="plan-empty-btn" style="width:100%" onclick="openPlanModal()"><span>${budgets.plan ? "한 달 돈 계획 고치기" : "내 수입·지출로 한 달 돈 계획 만들기"}<small>${budgets.plan ? `수입 ${fmtWon(budgets.plan.income)} · 저축 ${budgets.plan.saveRate}% · 쓸 돈 ${fmtWon(budgets.total)}` : "평균 수입에서 저축을 빼고, 카테고리별로 얼마 쓸지 정해요. 줄이고 싶은 건 줄일 수 있어요"}</small></span>${CHEVRON}</button>`;
   const st = budgetStatus(y, m), bRows = [];
   if (st.total) bRows.push({ name: "전체", limit: st.total, used: st.spent });
   st.cats.forEach(c => bRows.push({ name: c.cat, limit: c.limit, used: c.used }));
@@ -2841,7 +3024,8 @@ function renderSummary() {
   $("summarySub").textContent = comp;
 
   const st = budgetStatus(y, m), bl = $("budgetLine");
-  if (st.total) {
+  renderPlanCard();
+  if (st.total && !budgets.plan) {
     const over = st.spent > st.total, pct = Math.min(100, Math.round(st.spent / st.total * 100));
     bl.innerHTML = `예산 ${fmtWon(st.total)} 중 ${fmtWon(st.spent)} 썼어요 · ${over ? `${fmtWon(st.spent - st.total)} 넘었어요` : `${fmtWon(st.total - st.spent)} 남음`}
       <div class="progress" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="한 달 예산"><div style="width:${pct}%"></div></div>`;
@@ -3648,7 +3832,7 @@ function mergeStates(remote, local) {
   return Object.assign({}, remote, {
     entries: union(remote.entries, local.entries), fixed: union(remote.fixed, local.fixed), savings: union(remote.savings, local.savings),
     wish: union(remote.wish, local.wish), recv: union(remote.recv, local.recv), points: union(remote.points || [], local.points || []), trips: union(remote.trips || [], local.trips || []),
-    budgets: { total: remote.budgets.total || local.budgets.total || 0, cats: Object.assign({}, local.budgets.cats, remote.budgets.cats) },
+    budgets: { total: remote.budgets.total || local.budgets.total || 0, cats: Object.assign({}, local.budgets.cats, remote.budgets.cats), plan: remote.budgets.plan || local.budgets.plan },
     learned: Object.assign({}, local.learned, remote.learned),
   });
 }
