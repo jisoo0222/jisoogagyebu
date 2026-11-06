@@ -964,7 +964,7 @@
           <input id="entryInput" type="text" placeholder="어제 떡볶이 8000, 노트북 120만원 3개월 할부" aria-label="내역 입력" />
           <button class="btn-primary" id="addBtn"><span>기록</span><span class="arrow-dot" id="arrowAdd"></span></button>
         </div>
-        <div class="hint" id="hint">"3개월 할부", "4명 n빵"도 돼요</div>
+        <div class="hint" id="hint">+3만원은 수입, "3개월 할부", "4명 n빵"도 돼요</div>
       </div>
     </div>
 
@@ -1900,16 +1900,20 @@ function parseOne(raw, ctx = {}) {
   if (!giving && !RE_BUY.test(lower) && RE_INCOME.test(lower)) type = "income";
   if (giving) split = null; // 내 몫을 보낸 거면 그냥 지출
 
-  let description = text.split(/\s+/).filter(Boolean)
-    .map(t => t.replace(/짜리$/, "").replace(/(.{2,})에서$/, "$1"))
+  // +금액 → 수입, -금액 → 지출 (부호가 제일 우선)
+  const signType = /(^|[\s(,:])\+\s*\d/.test(original) ? "income" : /(^|[\s(,:])[-−]\s*\d/.test(original) ? "expense" : null;
+  if (signType) type = signType;
+  let description = text.replace(/(^|\s)[+\-−](?=\s|$)/g, " ").split(/\s+/).filter(Boolean)
+    .map(t => t.replace(/^[+\-−]+|[+\-−]+$/g, "").replace(/짜리$/, "").replace(/(.{2,})에서$/, "$1"))
     .filter(t => t && !FILLER.has(t)).join(" ").trim();
 
   let category;
   const hit = !forced ? lookupLearned(description, original) : null;
   if (forced) category = forced;
-  else if (hit) { category = hit.category; if (hit.type) type = hit.type; }
-  else if (type === "expense") category = (giving && /용돈|선물/.test(lower)) ? "선물/용돈" : (EXPENSE_RULES.find(([, re]) => re.test(" " + lower + " ")) || ["기타"])[0];
-  else category = (INCOME_RULES.find(([, re]) => re.test(lower)) || ["기타수입"])[0];
+  else if (hit) { category = hit.category; if (hit.type && !signType) type = hit.type; if (signType && hit.type && hit.type !== signType) category = null; }
+  if (category === null) category = type === "income" ? (INCOME_RULES.find(([, re]) => re.test(lower)) || ["기타수입"])[0] : (EXPENSE_RULES.find(([, re]) => re.test(" " + lower + " ")) || ["기타"])[0];
+  else if (category === undefined && type === "expense") category = (giving && /용돈|선물/.test(lower)) ? "선물/용돈" : (EXPENSE_RULES.find(([, re]) => re.test(" " + lower + " ")) || ["기타"])[0];
+  else if (category === undefined) category = (INCOME_RULES.find(([, re]) => re.test(lower)) || ["기타수입"])[0];
   if (category === "기타" && !forced && !hit && FOOD_TAIL.test(description.split(" ").pop() || "")) category = "식비";
   if (!description) description = sm ? "n빵 정산" : category;
   if (type === "income") { installment = 0; split = null; }
@@ -1917,7 +1921,7 @@ function parseOne(raw, ctx = {}) {
 }
 
 function splitSegments(raw) {
-  const parts = raw.split(/\s*(?:,(?!\d{3}(?!\d))|，|\+|\s그리고\s)\s*/).map(s => s.trim()).filter(Boolean);
+  const parts = raw.split(/\s*(?:,(?!\d{3}(?!\d))|，|\+(?!\s*\d)|\s그리고\s)\s*/).map(s => s.trim()).filter(Boolean);
   const out = [];
   for (const p of parts) {
     const ms = [...p.matchAll(RE_WON_G)];
